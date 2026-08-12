@@ -8,6 +8,19 @@ The exact visual design, field mappings, filters, and acceptance checks are in
 [`dashboard-spec.md`](dashboard-spec.md). Power BI is the recommended tool for
 this project because it connects directly to the Databricks SQL warehouse.
 
+## Preview Images
+
+When Power BI/Tableau is unavailable, generate reproducible PNG previews from
+the same mart views:
+
+```text
+uv run python dashboard/generate_screenshots.py
+```
+
+The output goes to `docs/screenshots/`. These previews are not a replacement
+for a native `.pbix` or `.twbx` report; they provide verified visual evidence
+until the report is saved from the desktop BI tool.
+
 ## Power BI Desktop
 
 1. Get Data -> Databricks, sign in with the SQL warehouse HTTP path and personal access token (see `docs/setup-checklist.md`).

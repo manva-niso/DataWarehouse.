@@ -31,6 +31,7 @@
 - [ ] Choose Power BI Desktop or Tableau Free Edition.
 - [ ] Connect the chosen BI tool to Databricks marts only (HTTP path + PAT; see `dashboard/README.md`).
 - [ ] Build 3-4 dashboard visuals.
-- [ ] Export dashboard screenshots to `docs/screenshots/`.
+- [x] Generate verified mart-based preview screenshots in `docs/screenshots/`.
+- [ ] Export final native dashboard screenshots from Power BI/Tableau.
 - [x] Generate the sample Excel workbook from `mart_application_tracker` (49 rows; `exports/application_tracker.xlsx`).
 - [ ] Verify zero-row export, missing closing date, and locked-file retry behavior.
