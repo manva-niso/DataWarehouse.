@@ -29,6 +29,7 @@ def load_dim_company(df=None) -> None:
     function spec; the SQL reads directly from the staging tables.
     """
     _run_sql_file("load_dimensions.sql")
+    _run_sql_file("scd2_company.sql")
 
 
 def load_fact_job_posting(df=None) -> None:

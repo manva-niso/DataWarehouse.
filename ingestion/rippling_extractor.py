@@ -13,7 +13,7 @@ from .http_utils import get_json
 
 logger = logging.getLogger(__name__)
 
-RIPPLING_BOARD_URL = "https://app.rippling.com/api/boards/{board_slug}/jobs"
+RIPPLING_BOARD_URL = "https://ats.rippling.com/api/v2/board/{board_slug}/jobs"
 MAX_DETAIL_WORKERS = 5
 
 
@@ -43,30 +43,43 @@ def fetch_rippling_jobs(board_slug: str) -> list[dict[str, Any]]:
     if not board_slug:
         raise RipplingConfigError("board_slug must not be empty")
     list_url = RIPPLING_BOARD_URL.format(board_slug=board_slug)
-    body = get_json(list_url)
-    if not isinstance(body, dict):
-        logger.info("Rippling board %s returned a non-object list response", board_slug)
-        return []
-    raw_jobs = body.get("jobs", [])
-    job_ids = [
-        job["id"] for job in raw_jobs
-        if isinstance(job, dict) and job.get("id")
-    ]
-    logger.info("Rippling board %s listed %d jobs", board_slug, len(job_ids))
     details: list[dict[str, Any]] = []
-    with ThreadPoolExecutor(max_workers=MAX_DETAIL_WORKERS) as executor:
-        futures = {
-            executor.submit(_fetch_job_detail, board_slug, job_id): job_id
-            for job_id in job_ids
-        }
-        for future in as_completed(futures):
-            job_id = futures[future]
-            try:
-                detail = future.result()
-            except Exception as exc:  # noqa: BLE001 - isolation by design
-                logger.warning("Rippling detail for job %s failed: %s", job_id, exc)
-                continue
-            if detail is not None:
-                details.append(detail)
-    logger.info("Rippling board %s fetched %d job details", board_slug, len(details))
+    page = 0
+    page_size = 100
+    listed = 0
+    while True:
+        body = get_json(list_url, params={"page": page, "pageSize": page_size})
+        if not isinstance(body, dict):
+            logger.info("Rippling board %s returned a non-object list response", board_slug)
+            break
+        raw_jobs = body.get("items", [])
+        job_ids = [
+            job["id"] for job in raw_jobs
+            if isinstance(job, dict) and job.get("id")
+        ]
+        listed += len(job_ids)
+        with ThreadPoolExecutor(max_workers=MAX_DETAIL_WORKERS) as executor:
+            futures = {
+                executor.submit(_fetch_job_detail, board_slug, job_id): job_id
+                for job_id in job_ids
+            }
+            for future in as_completed(futures):
+                job_id = futures[future]
+                try:
+                    detail = future.result()
+                except Exception as exc:  # noqa: BLE001 - isolation by design
+                    logger.warning("Rippling detail for job %s failed: %s", job_id, exc)
+                    continue
+                if detail is not None:
+                    details.append(detail)
+        total_pages = int(body.get("totalPages", page + 1) or page + 1)
+        if page + 1 >= total_pages or not job_ids:
+            break
+        page += 1
+    logger.info(
+        "Rippling board %s listed %d jobs and fetched %d details",
+        board_slug,
+        listed,
+        len(details),
+    )
     return details

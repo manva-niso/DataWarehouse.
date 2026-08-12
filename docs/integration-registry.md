@@ -16,7 +16,7 @@ never contains secret values.
 | Adzuna | `ADZUNA_APP_KEY` | `.env` | `fetch_adzuna_jobs` | VERIFIED live |
 | Greenhouse | Board token or board identifier | `.env` / `config/companies.yaml` per `AGENTS.md` | `fetch_greenhouse_jobs` | VERIFIED live (`figma`, `stripe`, `coinbase`) |
 | Lever | Company slug | `config/companies.yaml` | `fetch_lever_jobs` | VERIFIED live (`leverdemo`, `palantir`) |
-| Rippling | Board slug | `config/companies.yaml` | `fetch_rippling_jobs` | No public board verified; endpoint remains an assumption |
+| Rippling | Board slug | `config/companies.yaml` | `fetch_rippling_jobs` | VERIFIED live (`gather`) |
 | OpenCode Go | Provider authentication | OpenCode auth storage, outside this repo | Agent execution only | External setup |
 | Power BI or Tableau | Databricks connector credentials (HTTP path + PAT) | BI tool credential store, outside this repo | Dashboard refresh | TODO |
 
@@ -44,7 +44,7 @@ generated exports. Public board slugs may be tracked in
 | Adzuna | Paginated search by query, country, and page; validate country before request | `raw_adzuna` | Parse source dates and fields into common posting shape | `staging_postings`, warehouse facts, marts | VERIFIED live (50 rows) |
 | Greenhouse | `GET api.greenhouse.io/v1/boards/{board_token}/jobs` | `raw_greenhouse` | Map board jobs and ISO dates into common posting shape | `staging_postings`, warehouse facts, marts | VERIFIED live (892 rows) |
 | Lever | `GET api.lever.co/v0/postings/{company}?mode=json` | `raw_lever` | Map fields and epoch-millisecond dates into common posting shape | `staging_postings`, warehouse facts, marts | VERIFIED live (697 rows) |
-| Rippling | List call followed by detail calls, max 5 concurrent details | `raw_rippling` | Merge list/detail payloads and normalize source dates | `staging_postings`, warehouse facts, marts | No public board verified; zero-row source handled cleanly |
+| Rippling | Paginated list plus detail calls at `ats.rippling.com/api/v2/board/{slug}/jobs`, max 5 concurrent details | `raw_rippling` | Map `uuid`, `name`, `workLocations`, `createdOn`, and description fields | `staging_postings`, warehouse facts, marts | VERIFIED live (Gather, 1 row) |
 
 All source failures are logged and isolated. A zero-result response is valid;
 malformed JSON is logged as `PARSE_ERROR`; one failed source does not stop the
@@ -57,20 +57,20 @@ others; the full run fails only when every source fails.
 | 1 | Verify catalog/schema access and warehouse HTTP path | Catalog, schema, SQL warehouse | Configuration / setup | DONE |
 | 2 | Create the rerunnable warehouse schema and seed source values | `warehouse/schema.sql`, all schema tables | Warehouse | DONE (15 statements applied, rerunnable) |
 | 3 | Append one JSON row per source payload and record `run_id`, `ingested_at` | `raw_*` | Ingestion | DONE (Adzuna 50, Greenhouse 892, Lever 697) |
-| 4 | Normalize source-specific fields and types with replaceable output | `staging_postings` | Staging | DONE (1,601 deduplicated postings) |
+| 4 | Normalize source-specific fields and types with replaceable output | `staging_postings` | Staging | DONE (1,602 deduplicated postings) |
 | 5 | Deduplicate by normalized company, title, and location; preserve earliest `first_seen_at` | `staging_postings` | Staging | DONE |
-| 6 | Upsert dimensions, including SCD2 company versions only on tracked changes | `dim_*` | Warehouse | DONE via `load_dim_company`; SCD2 upgrade in `scd2_company.sql` still TODO |
+| 6 | Upsert dimensions, including SCD2 company versions only on tracked changes | `dim_*` | Warehouse | DONE via `load_dim_company` + `scd2_company.sql`; 42 current versions verified |
 | 7 | Upsert facts on `(posting_id, date_posted)`; never delete disappeared postings | `fact_*` | Warehouse | DONE (idempotent rerun verified) |
 | 8 | Write run and data-quality outcomes, including partial failures | `pipeline_run_log`, `data_quality_log` | Orchestration / Staging | DONE (PARTIAL run logged correctly) |
 | 9 | Create or replace each mart view atomically | `marts/*` views | Marts | DONE (4 of 4 views return rows) |
 | 10 | Query marts only for dashboard and Excel presentation | `mart_*` views | Dashboard / Export | DONE (Excel export live) |
-| 11 | Delete raw rows older than the configured positive retention window | `raw_*` | Orchestration | CODE READY via `cleanup_raw_tables`; live run TODO |
+| 11 | Delete raw rows older than the configured positive retention window | `raw_*` | Orchestration | VERIFIED live with 30-day window; zero recent rows deleted |
 
 ## Export And Dashboard Actions
 
 | System | Required action | Source allowed | Output or acceptance check | Status |
 |---|---|---|---|---|
-| Excel / openpyxl | Query `mart_application_tracker` in write-only mode | Marts only | Zero rows still produce headers; missing closing date displays `Not specified`; locked file retries with timestamp suffix | DONE (1,601-row live export in `exports/`) |
+| Excel / openpyxl | Query `mart_application_tracker` in write-only mode | Marts only | Zero rows still produce headers; missing closing date displays `Not specified`; locked file retries with timestamp suffix | DONE (1,602-row live export in `exports/`) |
 | Power BI Desktop | Connect to Databricks marts only and configure refresh credentials | Marts only | Build 3-4 visuals and save dashboard artifact under `dashboard/` if selected | TODO / choose tool |
 | Tableau Free Edition | Alternative to Power BI; connect to Databricks marts only | Marts only | Build 3-4 visuals and save workbook artifact under `dashboard/` if selected | TODO / choose tool |
 | Dashboard documentation | Export visual screenshots | Dashboard | Store PNGs under `docs/screenshots/` | TODO |

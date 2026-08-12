@@ -19,12 +19,12 @@
 
 - [x] Verify catalog/schema access (`SHOW CATALOGS` lists `samples`, `system`, `workspace`; default session is `workspace.default`).
 - [x] Run `uv run python -m orchestration.apply_schema` — 15 statements applied, rerunnable.
-- [x] Run Adzuna, Greenhouse, and Lever raw ingestion and verify source row counts (50, 892, and 697 in the verified run).
-- [x] Run normalization and deduplication; verify `staging_postings` (1,601 source-distinct postings in the verified run).
-- [x] Run dimension and fact loads twice; verify idempotency.
+- [x] Run Adzuna, Greenhouse, Lever, and Rippling/Gather raw ingestion and verify source row counts (50, 892, 697, and 1 in the verified run).
+- [x] Run normalization and deduplication; verify `staging_postings` (1,602 postings in the verified run).
+- [x] Run dimension and fact loads twice; verify idempotency and SCD2 current-version uniqueness.
 - [x] Refresh the mart views and verify each view definition (all 4 marts return rows).
-- [x] Verify `pipeline_run_log` and `data_quality_log`; the verified run logged SUCCESS for Adzuna/Greenhouse/Lever and zero-row SUCCESS for Rippling.
-- [ ] Verify raw retention cleanup with a positive test window (`cleanup_raw_tables`).
+- [x] Verify `pipeline_run_log` and `data_quality_log`; all four configured sources logged SUCCESS.
+- [x] Verify raw retention cleanup with a positive 30-day window (`cleanup_raw_tables`).
 
 ## Presentation
 

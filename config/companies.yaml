@@ -9,11 +9,8 @@ companies:
     lever_company_slug: leverdemo
   - display_name: Palantir
     lever_company_slug: palantir
+  - display_name: Gather
+    rippling_board_slug: gather
 
 # Board identifiers are public/non-secret configuration. Keep API keys and
 # secret tokens in local .env files only.
-# Rippling: no public board found at verification time (2026-08-12); endpoint
-# shape (app.rippling.com/api/boards/{slug}/jobs) remains a documented
-# assumption. Add entries like this when a board is available:
-# - display_name: Example Co
-#   rippling_board_slug: example-board

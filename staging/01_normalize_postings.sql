@@ -4,9 +4,8 @@
 -- Greenhouse payloads carry company_name/first_published themselves; the
 -- pipeline still enriches greenhouse/lever/rippling with company_display_name
 -- from config/companies.yaml as a fallback. Lever createdAt/closedAt are epoch
--- milliseconds, converted with FROM_UNIXTIME. Rippling field names are a
--- documented assumption (publishedAt/createdAt, location string or object)
--- to be verified on first live pull.
+-- milliseconds, converted with FROM_UNIXTIME. Rippling is normalized from the
+-- verified v2 API fields (uuid/name/workLocations/createdOn/description).
 -- Databricks SQL / Delta. Tables are unqualified; the configured catalog and
 -- schema (workspace.default) resolve them.
 
@@ -92,31 +91,54 @@ WITH normalized AS (
   UNION ALL
 
   SELECT
-    CONCAT('rippling-', get_json_object(payload, '$.id')) AS posting_id,
+    CONCAT('rippling-', COALESCE(
+      get_json_object(payload, '$.uuid'),
+      get_json_object(payload, '$.id')
+    )) AS posting_id,
     'rippling' AS source_id,
-    COALESCE(TRIM(get_json_object(payload, '$.company_display_name')), 'Unknown') AS company_name,
-    COALESCE(TRIM(get_json_object(payload, '$.company_display_name')), 'Unknown') AS display_name,
     COALESCE(
-      get_json_object(payload, '$.location.name'),
+      TRIM(get_json_object(payload, '$.company_display_name')),
+      TRIM(get_json_object(payload, '$.companyName')),
+      'Unknown'
+    ) AS company_name,
+    COALESCE(
+      TRIM(get_json_object(payload, '$.company_display_name')),
+      TRIM(get_json_object(payload, '$.companyName')),
+      'Unknown'
+    ) AS display_name,
+    COALESCE(
+      get_json_object(payload, '$.workLocations[0]'),
       get_json_object(payload, '$.location')
     ) AS location_raw,
     TO_DATE(SUBSTR(
       COALESCE(
+        get_json_object(payload, '$.createdOn'),
         get_json_object(payload, '$.publishedAt'),
         get_json_object(payload, '$.createdAt')
       ),
       1, 10
     )) AS date_posted,
     CAST(NULL AS DATE) AS closing_date,
-    COALESCE(TRIM(get_json_object(payload, '$.title')), 'Unknown') AS job_title,
-    get_json_object(payload, '$.description') AS description,
+    COALESCE(TRIM(get_json_object(payload, '$.name')), 'Unknown') AS job_title,
+    COALESCE(
+      get_json_object(payload, '$.description.role'),
+      get_json_object(payload, '$.description.company'),
+      get_json_object(payload, '$.description')
+    ) AS description,
     ingested_at AS seen_at,
     (
-      get_json_object(payload, '$.title') IS NULL
-      OR get_json_object(payload, '$.company_display_name') IS NULL
-      OR get_json_object(payload, '$.location') IS NULL
+      get_json_object(payload, '$.name') IS NULL
+      OR COALESCE(
+        get_json_object(payload, '$.company_display_name'),
+        get_json_object(payload, '$.companyName')
+      ) IS NULL
+      OR COALESCE(
+        get_json_object(payload, '$.workLocations[0]'),
+        get_json_object(payload, '$.location')
+      ) IS NULL
       OR TO_DATE(SUBSTR(
         COALESCE(
+          get_json_object(payload, '$.createdOn'),
           get_json_object(payload, '$.publishedAt'),
           get_json_object(payload, '$.createdAt')
         ),

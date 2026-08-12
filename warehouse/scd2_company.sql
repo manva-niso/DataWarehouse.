@@ -3,6 +3,7 @@
 -- actually changes. Unchanged companies keep their current version.
 -- Rerunnable: closing is idempotent, and step 2 only inserts a fresh current
 -- version when no current version exists.
+-- Databricks SQL / Delta.
 
 -- Step 1: close current versions whose tracked attributes differ from staging.
 UPDATE dim_company AS c
@@ -12,13 +13,17 @@ WHERE c.is_current = TRUE
     SELECT 1
     FROM (
       SELECT
-        TO_HEX(MD5(LOWER(company_name))) AS company_id,
+        MD5(LOWER(company_name)) AS company_id,
         MIN(display_name) AS display_name
       FROM staging_postings
       GROUP BY company_name
     ) AS s
     WHERE s.company_id = c.company_id
-      AND s.display_name IS DISTINCT FROM c.display_name
+      AND (
+        s.display_name <> c.display_name
+        OR (s.display_name IS NULL AND c.display_name IS NOT NULL)
+        OR (s.display_name IS NOT NULL AND c.display_name IS NULL)
+      )
   );
 
 -- Step 2: open a fresh current version for any company without one.
@@ -32,7 +37,7 @@ SELECT
   TRUE
 FROM (
   SELECT
-    TO_HEX(MD5(LOWER(company_name))) AS company_id,
+    MD5(LOWER(company_name)) AS company_id,
     company_name,
     MIN(display_name) AS display_name
   FROM staging_postings

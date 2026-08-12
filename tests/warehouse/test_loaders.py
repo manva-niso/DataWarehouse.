@@ -7,9 +7,9 @@ from warehouse.loaders import load_dim_company, load_fact_job_posting
 @patch("warehouse.loaders.run_sql_script")
 def test_load_dim_company_runs_dimensions_sql(mock_run_sql):
     load_dim_company()
-    sql = mock_run_sql.call_args.args[0]
-    assert "dim_company" in sql
-    assert "CREATE OR REPLACE TABLE dim_date" in sql
+    sql_files = [call.args[0] for call in mock_run_sql.call_args_list]
+    assert any("dim_company" in sql and "CREATE OR REPLACE TABLE dim_date" in sql for sql in sql_files)
+    assert any("UPDATE dim_company" in sql and "is_current = FALSE" in sql for sql in sql_files)
 
 
 @patch("warehouse.loaders.run_sql_script")
