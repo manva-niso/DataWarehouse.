@@ -1,0 +1,15 @@
+.env
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+exports/*
+!exports/.gitkeep
+!exports/application_tracker.xlsx
+
+.opencode/cache/*
+!.opencode/cache/.gitkeep
+
+orchestration/.pipeline.lock

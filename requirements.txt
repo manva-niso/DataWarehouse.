@@ -1,0 +1,7 @@
+openpyxl
+pandas
+python-dotenv
+PyYAML
+pytest
+requests
+databricks-sql-connector

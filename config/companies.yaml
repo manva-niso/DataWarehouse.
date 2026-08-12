@@ -1,0 +1,8 @@
+companies: []
+
+# Board identifiers are public/non-secret configuration. Keep API keys and
+# secret tokens in local .env files only.
+# - display_name: Example Company
+#   greenhouse_board_token: example-board
+#   lever_company_slug: example-company
+#   rippling_board_slug: example-board
