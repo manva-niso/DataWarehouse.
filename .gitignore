@@ -11,5 +11,6 @@ exports/*
 
 .opencode/cache/*
 !.opencode/cache/.gitkeep
+.opencode/
 
 orchestration/.pipeline.lock

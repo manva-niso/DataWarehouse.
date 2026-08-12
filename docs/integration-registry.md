@@ -14,10 +14,9 @@ never contains secret values.
 | Databricks | `DATABRICKS_CATALOG`, `DATABRICKS_SCHEMA` | `.env` | Default namespace; `workspace` / `default` | VERIFIED |
 | Adzuna | `ADZUNA_APP_ID` | `.env` | `fetch_adzuna_jobs` | VERIFIED live |
 | Adzuna | `ADZUNA_APP_KEY` | `.env` | `fetch_adzuna_jobs` | VERIFIED live |
-| Greenhouse | Board token or board identifier | `.env` / `config/companies.yaml` per `AGENTS.md` | `fetch_greenhouse_jobs` | VERIFIED live (`figma`, `stripe`, `coinbase`) |
+| Greenhouse | Board token or board identifier | `.env` / `config/companies.yaml` | `fetch_greenhouse_jobs` | VERIFIED live (`figma`, `stripe`, `coinbase`) |
 | Lever | Company slug | `config/companies.yaml` | `fetch_lever_jobs` | VERIFIED live (`leverdemo`, `palantir`) |
 | Rippling | Board slug | `config/companies.yaml` | `fetch_rippling_jobs` | VERIFIED live (`gather`) |
-| OpenCode Go | Provider authentication | OpenCode auth storage, outside this repo | Agent execution only | External setup |
 | Power BI or Tableau | Databricks connector credentials (HTTP path + PAT) | BI tool credential store, outside this repo | Dashboard refresh | TODO |
 
 Do not commit `.env`, PATs, API keys, access tokens, BI credentials, or

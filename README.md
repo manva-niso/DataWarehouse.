@@ -2,7 +2,7 @@
 
 Job Market Pulse is a manually run Python and Databricks (Delta) data warehouse pipeline for job-posting ingestion, star-schema modeling, dashboard marts, and Excel tracking.
 
-Implementation follows the build order and contracts in `AGENTS.md`.
+Implementation follows the build order and contracts documented in `AGENTS.md`.
 
 ## Backend
 

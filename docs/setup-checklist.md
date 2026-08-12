@@ -13,7 +13,6 @@
 - [x] Create Adzuna credentials and add `ADZUNA_APP_ID` and `ADZUNA_APP_KEY` to local `.env`.
 - [ ] Add non-secret company board slugs to `config/companies.yaml`.
 - [ ] Add any secret board tokens to local `.env`, never to tracked files.
-- [ ] Authenticate OpenCode Go outside this repository if the configured agents are used.
 
 ## Databricks
 
