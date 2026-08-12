@@ -1,8 +1,19 @@
-companies: []
+companies:
+  - display_name: Figma
+    greenhouse_board_token: figma
+  - display_name: Stripe
+    greenhouse_board_token: stripe
+  - display_name: Coinbase
+    greenhouse_board_token: coinbase
+  - display_name: Lever (Demo)
+    lever_company_slug: leverdemo
+  - display_name: Palantir
+    lever_company_slug: palantir
 
 # Board identifiers are public/non-secret configuration. Keep API keys and
 # secret tokens in local .env files only.
-# - display_name: Example Company
-#   greenhouse_board_token: example-board
-#   lever_company_slug: example-company
+# Rippling: no public board found at verification time (2026-08-12); endpoint
+# shape (app.rippling.com/api/boards/{slug}/jobs) remains a documented
+# assumption. Add entries like this when a board is available:
+# - display_name: Example Co
 #   rippling_board_slug: example-board

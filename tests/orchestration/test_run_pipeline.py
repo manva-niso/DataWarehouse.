@@ -51,9 +51,11 @@ def test_log_pipeline_run_writes_one_row_per_entry(mock_insert):
 
 
 @patch("orchestration.run_pipeline.log_pipeline_run")
-def test_main_second_run_logs_already_running_and_exits(mock_log, tmp_path, monkeypatch):
+@patch("orchestration.run_pipeline.os.kill")
+def test_main_second_run_logs_already_running_and_exits(mock_kill, mock_log, tmp_path, monkeypatch):
     monkeypatch.setattr(rp, "LOCK_FILE", tmp_path / "lock")
     (tmp_path / "lock").write_text("123", encoding="utf-8")
+    mock_kill.return_value = None
     with patch("orchestration.run_pipeline.logger") as mock_logger:
         rp.main()
     assert "ALREADY_RUNNING" in str(mock_logger.warning.call_args)

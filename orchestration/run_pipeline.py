@@ -6,7 +6,11 @@ over aborting: a failed source is logged while the remaining sources run, and
 downstream stages run when at least one source succeeded. The run logger is
 always called, even on partial or complete failure.
 
-All warehouse access goes through the dbio package (Databricks SQL).
+Greenhouse, Lever, and Rippling payloads are enriched with a
+company_display_name field at fetch time (from config/companies.yaml) because
+their APIs do not include a human-readable company name; the raw payload
+columns otherwise stay untouched. All warehouse access goes through the dbio
+package (Databricks SQL).
 """
 
 import logging
@@ -42,6 +46,22 @@ def _acquire_lock() -> bool:
         os.close(fd)
         return True
     except FileExistsError:
+        try:
+            pid = int(LOCK_FILE.read_text(encoding="ascii").strip())
+        except (OSError, ValueError):
+            return False
+        try:
+            os.kill(pid, 0)
+        except ProcessLookupError:
+            logger.warning("Removing stale pipeline lock for pid %d", pid)
+            _release_lock()
+            return _acquire_lock()
+        except PermissionError:
+            return False
+        except OSError:
+            logger.warning("Removing stale pipeline lock for pid %d", pid)
+            _release_lock()
+            return _acquire_lock()
         return False
 
 
@@ -110,6 +130,7 @@ def _company_configs() -> list[dict]:
 
 def _fetch_source(source: str) -> list[dict]:
     load_dotenv()
+    companies = _company_configs()
     if source == "adzuna":
         query = os.getenv("ADZUNA_QUERY")
         country = os.getenv("ADZUNA_COUNTRY")
@@ -124,21 +145,46 @@ def _fetch_source(source: str) -> list[dict]:
                 break
         return results
     if source == "greenhouse":
+        config_companies = [c for c in companies if c.get("greenhouse_board_token")]
+        if config_companies:
+            results = []
+            for entry in config_companies:
+                for job in fetch_greenhouse_jobs(entry["greenhouse_board_token"]):
+                    results.append({
+                        **job,
+                        "company_display_name": entry.get("display_name") or "Unknown",
+                    })
+            return results
         token = os.getenv("GREENHOUSE_BOARD_TOKEN")
         if not token:
             raise RuntimeError("GREENHOUSE_BOARD_TOKEN must be set in .env")
-        return fetch_greenhouse_jobs(token)
+        jobs = fetch_greenhouse_jobs(token)
+        return [{**job, "company_display_name": "Unknown"} for job in jobs]
     if source == "lever":
-        slugs = [c["lever_company_slug"] for c in _company_configs() if c.get("lever_company_slug")]
         results = []
-        for slug in slugs:
-            results.extend(fetch_lever_jobs(slug))
+        for entry in companies:
+            slug = entry.get("lever_company_slug")
+            if not slug:
+                continue
+            for posting in fetch_lever_jobs(slug):
+                results.append({
+                    **posting,
+                    "company_display_name": entry.get("display_name")
+                    or posting.get("company")
+                    or "Unknown",
+                })
         return results
     if source == "rippling":
-        slugs = [c["rippling_board_slug"] for c in _company_configs() if c.get("rippling_board_slug")]
         results = []
-        for slug in slugs:
-            results.extend(fetch_rippling_jobs(slug))
+        for entry in companies:
+            slug = entry.get("rippling_board_slug")
+            if not slug:
+                continue
+            for job in fetch_rippling_jobs(slug):
+                results.append({
+                    **job,
+                    "company_display_name": entry.get("display_name") or "Unknown",
+                })
         return results
     raise ValueError(f"Unknown source {source!r}")
 
@@ -152,6 +198,7 @@ def _run_staging() -> None:
 def main() -> None:
     """Run the full pipeline once; second concurrent invocation exits cleanly."""
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+    logging.getLogger("databricks.sql").setLevel(logging.WARNING)
     if not _acquire_lock():
         logger.warning("ALREADY_RUNNING: another pipeline run is in progress")
         return
@@ -161,9 +208,11 @@ def main() -> None:
     try:
         for source in SOURCES:
             try:
+                logger.info("Starting source %s", source)
                 payload = _fetch_source(source)
                 row_counts[source] = write_to_bigquery_raw(source, payload, run_id)
                 source_statuses[source] = "SUCCESS"
+                logger.info("Finished source %s: %d rows", source, row_counts[source])
             except Exception as exc:  # noqa: BLE001 - one source must not stop the rest
                 logger.error("Source %s failed: %s", source, exc)
                 row_counts[source] = 0
@@ -179,10 +228,14 @@ def main() -> None:
             logger.error("All sources failed; skipping downstream stages")
         else:
             try:
+                logger.info("Starting staging")
                 _run_staging()
+                logger.info("Starting data-quality checks")
                 run_data_quality_checks(run_id)
+                logger.info("Starting warehouse loads")
                 load_dim_company()
                 load_fact_job_posting()
+                logger.info("Starting mart refresh")
                 refresh_mart_views()
                 overall = "SUCCESS" if len(succeeded) == len(SOURCES) else "PARTIAL"
             except Exception as exc:  # noqa: BLE001

@@ -12,11 +12,11 @@ never contains secret values.
 | Databricks | `DATABRICKS_HTTP_PATH` | `.env` | Every warehouse operation via `dbio` | VERIFIED |
 | Databricks | `DATABRICKS_TOKEN` (SQL warehouse scope) | `.env` | Every warehouse operation via `dbio` | VERIFIED |
 | Databricks | `DATABRICKS_CATALOG`, `DATABRICKS_SCHEMA` | `.env` | Default namespace; `workspace` / `default` | VERIFIED |
-| Adzuna | `ADZUNA_APP_ID` | `.env` | `fetch_adzuna_jobs` | VERIFIED |
-| Adzuna | `ADZUNA_APP_KEY` | `.env` | `fetch_adzuna_jobs` | VERIFIED |
-| Greenhouse | Board token or board identifier | `.env` / `config/companies.yaml` per `AGENTS.md` | `fetch_greenhouse_jobs` | TODO (token empty) |
-| Lever | Company slug | `config/companies.yaml` | `fetch_lever_jobs` | TODO (no companies) |
-| Rippling | Board slug | `config/companies.yaml` | `fetch_rippling_jobs` | TODO (no companies) |
+| Adzuna | `ADZUNA_APP_ID` | `.env` | `fetch_adzuna_jobs` | VERIFIED live |
+| Adzuna | `ADZUNA_APP_KEY` | `.env` | `fetch_adzuna_jobs` | VERIFIED live |
+| Greenhouse | Board token or board identifier | `.env` / `config/companies.yaml` per `AGENTS.md` | `fetch_greenhouse_jobs` | VERIFIED live (`figma`, `stripe`, `coinbase`) |
+| Lever | Company slug | `config/companies.yaml` | `fetch_lever_jobs` | VERIFIED live (`leverdemo`, `palantir`) |
+| Rippling | Board slug | `config/companies.yaml` | `fetch_rippling_jobs` | No public board verified; endpoint remains an assumption |
 | OpenCode Go | Provider authentication | OpenCode auth storage, outside this repo | Agent execution only | External setup |
 | Power BI or Tableau | Databricks connector credentials (HTTP path + PAT) | BI tool credential store, outside this repo | Dashboard refresh | TODO |
 
@@ -41,10 +41,10 @@ generated exports. Public board slugs may be tracked in
 
 | Source | API action | Raw table | Normalization contract | Downstream consumers | Status |
 |---|---|---|---|---|---|
-| Adzuna | Paginated search by query, country, and page; validate country before request | `raw_adzuna` | Parse source dates and fields into common posting shape | `staging_postings`, warehouse facts, marts | VERIFIED live (50 rows per run) |
-| Greenhouse | `GET api.greenhouse.io/v1/boards/{board_token}/jobs` | `raw_greenhouse` | Map board jobs into common posting shape | `staging_postings`, warehouse facts, marts | Extractor ready; needs `.env` token |
-| Lever | `GET api.lever.co/v0/postings/{company}?mode=json` | `raw_lever` | Map Lever fields and date formats into common posting shape | `staging_postings`, warehouse facts, marts | Extractor ready; needs `companies.yaml` slug |
-| Rippling | List call followed by detail calls, max 5 concurrent details | `raw_rippling` | Merge list/detail payloads and normalize source dates | `staging_postings`, warehouse facts, marts | Extractor ready; endpoint shape is a documented assumption to verify |
+| Adzuna | Paginated search by query, country, and page; validate country before request | `raw_adzuna` | Parse source dates and fields into common posting shape | `staging_postings`, warehouse facts, marts | VERIFIED live (50 rows) |
+| Greenhouse | `GET api.greenhouse.io/v1/boards/{board_token}/jobs` | `raw_greenhouse` | Map board jobs and ISO dates into common posting shape | `staging_postings`, warehouse facts, marts | VERIFIED live (892 rows) |
+| Lever | `GET api.lever.co/v0/postings/{company}?mode=json` | `raw_lever` | Map fields and epoch-millisecond dates into common posting shape | `staging_postings`, warehouse facts, marts | VERIFIED live (697 rows) |
+| Rippling | List call followed by detail calls, max 5 concurrent details | `raw_rippling` | Merge list/detail payloads and normalize source dates | `staging_postings`, warehouse facts, marts | No public board verified; zero-row source handled cleanly |
 
 All source failures are logged and isolated. A zero-result response is valid;
 malformed JSON is logged as `PARSE_ERROR`; one failed source does not stop the
@@ -56,8 +56,8 @@ others; the full run fails only when every source fails.
 |---:|---|---|---|---|
 | 1 | Verify catalog/schema access and warehouse HTTP path | Catalog, schema, SQL warehouse | Configuration / setup | DONE |
 | 2 | Create the rerunnable warehouse schema and seed source values | `warehouse/schema.sql`, all schema tables | Warehouse | DONE (15 statements applied, rerunnable) |
-| 3 | Append one JSON row per source payload and record `run_id`, `ingested_at` | `raw_*` | Ingestion | DONE (adzuna 50 rows, append-only verified) |
-| 4 | Normalize source-specific fields and types with replaceable output | `staging_postings` | Staging | DONE (100 raw → 49 postings) |
+| 3 | Append one JSON row per source payload and record `run_id`, `ingested_at` | `raw_*` | Ingestion | DONE (Adzuna 50, Greenhouse 892, Lever 697) |
+| 4 | Normalize source-specific fields and types with replaceable output | `staging_postings` | Staging | DONE (1,601 deduplicated postings) |
 | 5 | Deduplicate by normalized company, title, and location; preserve earliest `first_seen_at` | `staging_postings` | Staging | DONE |
 | 6 | Upsert dimensions, including SCD2 company versions only on tracked changes | `dim_*` | Warehouse | DONE via `load_dim_company`; SCD2 upgrade in `scd2_company.sql` still TODO |
 | 7 | Upsert facts on `(posting_id, date_posted)`; never delete disappeared postings | `fact_*` | Warehouse | DONE (idempotent rerun verified) |
@@ -70,7 +70,7 @@ others; the full run fails only when every source fails.
 
 | System | Required action | Source allowed | Output or acceptance check | Status |
 |---|---|---|---|---|
-| Excel / openpyxl | Query `mart_application_tracker` in write-only mode | Marts only | Zero rows still produce headers; missing closing date displays `Not specified`; locked file retries with timestamp suffix | DONE (49-row sample in `exports/`) |
+| Excel / openpyxl | Query `mart_application_tracker` in write-only mode | Marts only | Zero rows still produce headers; missing closing date displays `Not specified`; locked file retries with timestamp suffix | DONE (1,601-row live export in `exports/`) |
 | Power BI Desktop | Connect to Databricks marts only and configure refresh credentials | Marts only | Build 3-4 visuals and save dashboard artifact under `dashboard/` if selected | TODO / choose tool |
 | Tableau Free Edition | Alternative to Power BI; connect to Databricks marts only | Marts only | Build 3-4 visuals and save workbook artifact under `dashboard/` if selected | TODO / choose tool |
 | Dashboard documentation | Export visual screenshots | Dashboard | Store PNGs under `docs/screenshots/` | TODO |

@@ -22,6 +22,10 @@ from dotenv import load_dotenv
 logger = logging.getLogger(__name__)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+INSERT_CHUNK_SIZE = 200
+# Databricks rejects parameterized statements whose combined parameter size
+# exceeds ~1 MB; stay well under it with size-aware chunking.
+INSERT_MAX_PARAM_BYTES = 900_000
 
 
 def _load_env() -> None:
@@ -106,20 +110,58 @@ def query_rows(statement: str, parameters: dict | None = None) -> list[dict]:
 
 
 def insert_rows(table: str, rows: list[dict]) -> int:
-    """Batch-insert rows into a table; keys of the first row define columns."""
+    """Batch-insert rows into a table; keys of the first row define columns.
+
+    Uses multi-row INSERT ... VALUES statements (chunked) instead of
+    executemany, because the Databricks driver executes executemany
+    row-by-row (~seconds per row round trip on Free Edition). Chunk size is
+    capped by row count and by estimated parameter bytes, because Databricks
+    rejects parameterized statements whose parameters exceed ~1 MB total.
+    """
     if not rows:
         logger.info("No rows to insert into %s", table)
         return 0
-    columns = ", ".join(rows[0].keys())
-    placeholders = ", ".join(f":{name}" for name in rows[0].keys())
-    statement = f"INSERT INTO {table} ({columns}) VALUES ({placeholders})"
+    columns = list(rows[0].keys())
+    column_sql = ", ".join(columns)
     conn = _connection()
     try:
         cursor = conn.cursor()
-        cursor.executemany(statement, rows)
-        rowcount = cursor.rowcount if cursor.rowcount and cursor.rowcount > 0 else len(rows)
+        total = 0
+        chunk: list[dict] = []
+        chunk_bytes = 0
+
+        def flush() -> None:
+            nonlocal chunk, chunk_bytes, total
+            if not chunk:
+                return
+            placeholders = ", ".join(
+                "(" + ", ".join("?" for _ in columns) + ")" for _ in chunk
+            )
+            parameters = [row[column] for row in chunk for column in columns]
+            cursor.execute(
+                f"INSERT INTO {table} ({column_sql}) VALUES {placeholders}",
+                parameters,
+            )
+            total += (
+                cursor.rowcount if cursor.rowcount and cursor.rowcount > 0 else len(chunk)
+            )
+            chunk = []
+            chunk_bytes = 0
+
+        for row in rows:
+            row_bytes = sum(
+                len(str(value)) if value is not None else 2 for value in row.values()
+            )
+            if chunk and (
+                chunk_bytes + row_bytes > INSERT_MAX_PARAM_BYTES
+                or len(chunk) >= INSERT_CHUNK_SIZE
+            ):
+                flush()
+            chunk.append(row)
+            chunk_bytes += row_bytes
+        flush()
         cursor.close()
-        logger.info("Inserted %d rows into %s", rowcount, table)
-        return rowcount
+        logger.info("Inserted %d rows into %s", total, table)
+        return total
     finally:
         conn.close()
