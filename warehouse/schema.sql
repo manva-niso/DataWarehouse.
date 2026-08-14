@@ -1,5 +1,5 @@
 -- Job Market Pulse warehouse schema
--- Databricks SQL / Delta (hive_metastore). Run this file against the configured
+-- Databricks SQL / Delta (Unity Catalog). Run this file against the configured
 -- catalog and schema via orchestration/apply_schema.py.
 -- The DDL is rerunnable; raw tables remain append-only by pipeline behavior.
 
