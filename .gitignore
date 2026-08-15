@@ -13,4 +13,8 @@ exports/*
 !.opencode/cache/.gitkeep
 .opencode/
 
+# Personal study/reference document; keep local, never publish.
+docs/Job_Market_Pulse_to_read_reference_complete.md
+opencode.json
+
 orchestration/.pipeline.lock
