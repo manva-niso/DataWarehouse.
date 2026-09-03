@@ -1,5 +1,14 @@
 # AGENTS.md
 
+## HARD RULE — user confirmation required (never violates)
+Any delete, update, or edit to ANY external user data — Google Mail, Google Sheets, Google Docs, Google Drive, or any other mail/sheet/doc/cloud file — requires the user to explicitly write the word `confirm` in chat before the change is executed. This includes:
+- deleting, renaming, moving, or overwriting any file, email, sheet cell, doc text, or row
+- editing or formatting existing content (appending new, additive content is also confirmed unless it is a brand-new file the user just asked to create)
+- sending or deleting emails
+- creating/appending data in bulk to an existing spreadsheet or document
+
+Safe WITHOUT confirmation: reading/listening/viewing content, creating a brand-new file the user explicitly asked for, and writing entirely new files (e.g. creating a new Google Doc/Sheet as requested). When in doubt, ask first — never act.
+
 ## Project
 Job Market Pulse — a data warehouse pipeline that ingests job postings from multiple sources, models them into a star schema on Databricks (Delta), and serves a dashboard + Excel export. Portfolio project for a Data Engineer Intern role — prioritize correctness of pipeline/warehouse patterns over UI polish.
 
@@ -27,6 +36,9 @@ Job Market Pulse — a data warehouse pipeline that ingests job postings from mu
 13. `orchestration/cleanup_raw_tables.sql` (30-day retention)
 
 Do not skip ahead to step 9+ before steps 1-8 work end to end on one source. One working vertical slice before scaling sources.
+
+## Phase 2 roadmap (approved, see docs/ROADMAP.md)
+Beyond the build order below, the approved Phase 2 plan adds: `job_posting_detail` (descriptions/URLs/salaries), `role_family` classification, applications status lifecycle + `job_notes` + `hidden_jobs` + `user_profile`, archive-then-delete retention for live facts, a rule-based job-matching engine (`mart_job_match`), a Streamlit CRUD app, six business-analytics marts (role market, seasonality, salary, source quality, funnel, longevity), Power BI + Tableau report builds, and a later RAG assistant. Follow `docs/ROADMAP.md` phases in order; re-verify with its per-phase commands.
 
 ## Repo structure
 ```
@@ -96,7 +108,7 @@ job-market-pulse/
 - Cross-source duplicate posting → dedup key = normalized(company_name) + title + normalized(location); keep earliest `first_seen_at`; document this as a known false-positive risk for exact-title-collision edge cases, don't try to solve perfectly
 - Missing `closing_date` from a source that doesn't provide one → store as NULL in warehouse, render as `"Not specified"` in the Excel export (not blank — blank should only mean "not yet applied")
 - Posting re-seen on a later day → update `last_seen_at`, do not create a duplicate fact row
-- Posting no longer appears in any pull → do not delete; `is_likely_closed` computed downstream in a mart as `last_seen_at < today - 3 days`
+- Posting no longer appears in any pull → do not keep it in the live facts forever: `is_likely_closed` is computed downstream in a mart as `last_seen_at < today - 3 days`, and postings that are past `closing_date` or absent for the configured retention window are ARCHIVED to `fact_job_posting_archive` (with `archive_reason`) and then removed from the live `fact_job_posting` — history is preserved in the archive for analytics; tracked applications/notes survive via a live ∪ archive union in the tracker mart (Phase 2, see `docs/ROADMAP.md`)
 - `dim_company` unchanged attributes → do NOT create a new SCD2 version; only version on actual change
 - Excel export with zero rows → still write valid file with headers, never crash
 - Excel export file locked/open → catch PermissionError, retry once with timestamp-suffixed filename
