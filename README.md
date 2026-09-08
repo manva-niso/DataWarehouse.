@@ -1,9 +1,15 @@
 # Job Market Pulse
 
-Job Market Pulse is a manually run, multi-source job-market data warehouse.
-It ingests public job postings, stores the raw JSON in Databricks Delta Lake,
-normalizes and deduplicates the records, loads a star schema, publishes four
-analytics marts, and produces an Excel application tracker.
+Job Market Pulse is a multi-source job-market data warehouse and career intelligence platform.
+It ingests public job postings, stores raw JSON in Databricks Delta Lake,
+normalizes and deduplicates records, loads a star schema, publishes 11 analytical
+marts, and provides an interactive Streamlit intelligence application.
+
+## 🚀 Key Documentation & Guides
+- 📈 [**Enterprise Scaling Plan & Roadmap**](docs/SCALING_PLAN.md) — 5-phase plan: Distributed Celery crawlers, Delta Liquid Clustering, Redis query caching, and Mosaic AI vector search.
+- ☁️ [**100% Free Cloud Deployment Guide**](docs/FREE_STREAMLIT_DEPLOYMENT_GUIDE.md) — Step-by-step zero-cost deployment to Streamlit Community Cloud (no credit card, no local execution).
+- 🐳 [**Docker & Containerization Guide**](docs/deployment.md) — Multi-stage Dockerfile and Docker Compose configurations.
+- 🗺️ [**Engineering Roadmap**](docs/ROADMAP.md) — Completed milestones and architecture progression.
 
 The project is designed as a portfolio-quality data engineering system rather
 than a disposable scraper. The important properties are rerunnable stages,
