@@ -72,6 +72,7 @@ CREATE TABLE IF NOT EXISTS fact_job_posting (
   location_id STRING NOT NULL,
   source_id STRING NOT NULL,
   job_title STRING NOT NULL,
+  role_family STRING NOT NULL,
   date_posted DATE,
   closing_date DATE,
   first_seen_at TIMESTAMP NOT NULL,
@@ -80,6 +81,38 @@ CREATE TABLE IF NOT EXISTS fact_job_posting (
 )
 USING DELTA
 COMMENT 'Current deduplicated job postings. Rows are never deleted when a posting disappears from a pull.';
+
+CREATE TABLE IF NOT EXISTS job_posting_detail (
+  posting_id STRING NOT NULL,
+  description STRING,
+  posting_url STRING,
+  apply_url STRING,
+  salary_min DOUBLE,
+  salary_max DOUBLE,
+  currency STRING,
+  employment_type STRING,
+  last_seen_at TIMESTAMP NOT NULL
+)
+USING DELTA
+COMMENT 'Detailed posting attributes: full description, URLs, compensation, and employment type.';
+
+CREATE TABLE IF NOT EXISTS fact_job_posting_archive (
+  posting_id STRING NOT NULL,
+  company_id STRING NOT NULL,
+  location_id STRING NOT NULL,
+  source_id STRING NOT NULL,
+  job_title STRING NOT NULL,
+  role_family STRING NOT NULL,
+  date_posted DATE,
+  closing_date DATE,
+  first_seen_at TIMESTAMP NOT NULL,
+  last_seen_at TIMESTAMP NOT NULL,
+  is_incomplete BOOLEAN NOT NULL,
+  archived_at TIMESTAMP NOT NULL,
+  archive_reason STRING NOT NULL
+)
+USING DELTA
+COMMENT 'Archived job postings pruned from live facts when closing_date has passed or posting is unseen for retention window.';
 
 CREATE TABLE IF NOT EXISTS fact_posting_skill_mention (
   posting_id STRING NOT NULL,
@@ -122,13 +155,67 @@ CREATE TABLE IF NOT EXISTS raw_adzuna (
 USING DELTA
 COMMENT 'Append-only raw Adzuna API payloads.';
 
--- Manually maintained application tracking.
+-- Manually maintained application tracking with status lifecycle.
 CREATE TABLE IF NOT EXISTS applications (
   posting_id STRING NOT NULL,
-  date_applied DATE NOT NULL
+  date_applied DATE NOT NULL,
+  status STRING NOT NULL,
+  updated_at TIMESTAMP NOT NULL
 )
 USING DELTA
-COMMENT 'User-maintained application dates keyed by posting.';
+COMMENT 'User-maintained application status lifecycle and dates keyed by posting.';
+
+-- User notes per job posting.
+CREATE TABLE IF NOT EXISTS job_notes (
+  note_id STRING NOT NULL,
+  posting_id STRING NOT NULL,
+  note STRING NOT NULL,
+  created_at TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP NOT NULL
+)
+USING DELTA
+COMMENT 'User notes per job posting.';
+
+-- Dismissed or hidden jobs excluded from matches and search.
+CREATE TABLE IF NOT EXISTS hidden_jobs (
+  posting_id STRING NOT NULL,
+  hidden_at TIMESTAMP NOT NULL
+)
+USING DELTA
+COMMENT 'Dismissed or hidden jobs excluded from matches and browse.';
+
+-- Single-row target user profile for job matching scoring.
+CREATE TABLE IF NOT EXISTS user_profile (
+  profile_id STRING NOT NULL,
+  target_roles STRING NOT NULL,
+  target_skills STRING NOT NULL,
+  preferred_locations STRING,
+  remote_preference STRING NOT NULL,
+  min_salary DOUBLE,
+  currency STRING,
+  seniority_level STRING NOT NULL,
+  updated_at TIMESTAMP NOT NULL
+)
+USING DELTA
+COMMENT 'Single-row target user profile for job matching scoring.';
+
+-- Application state for feed tracking and user activity timestamps.
+CREATE TABLE IF NOT EXISTS app_state (
+  state_key STRING NOT NULL,
+  state_value STRING NOT NULL,
+  updated_at TIMESTAMP NOT NULL
+)
+USING DELTA
+COMMENT 'Key-value application state (e.g. last_viewed_at timestamp).';
+
+MERGE INTO app_state AS target
+USING (
+  SELECT 'last_viewed_at' AS state_key, CAST(CURRENT_TIMESTAMP() AS STRING) AS state_value, CURRENT_TIMESTAMP() AS updated_at
+) AS source
+ON target.state_key = source.state_key
+WHEN NOT MATCHED THEN
+  INSERT (state_key, state_value, updated_at)
+  VALUES (source.state_key, source.state_value, source.updated_at);
 
 -- Operational and data-quality logging.
 CREATE TABLE IF NOT EXISTS pipeline_run_log (

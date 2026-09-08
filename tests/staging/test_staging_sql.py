@@ -23,8 +23,11 @@ def test_normalize_sql_has_dedup_key_and_common_shape():
         "company_name",
         "location_normalized",
         "job_title",
+        "role_family",
         "date_posted",
         "closing_date",
+        "posting_url",
+        "salary_min",
         "is_incomplete",
     ):
         assert column in sql

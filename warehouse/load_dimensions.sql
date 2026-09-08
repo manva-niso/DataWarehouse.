@@ -34,20 +34,25 @@ FROM (VALUES
   ('SQL'), ('Python'), ('BigQuery'), ('Tableau'), ('Power BI'), ('Excel'), ('Airflow'),
   ('Spark'), ('Kafka'), ('Docker'), ('AWS'), ('GCP'), ('Azure'), ('Snowflake'),
   ('Pandas'), ('ETL'), ('Machine Learning'), ('Data Modeling'), ('Java'),
-  ('JavaScript'), ('React'), ('Statistics'), ('Git'), ('Linux'), ('Kubernetes')
+  ('JavaScript'), ('React'), ('Statistics'), ('Git'), ('Linux'), ('Kubernetes'),
+  ('Looker'), ('dbt'), ('Redshift'), ('Databricks'), ('R'), ('SAS'), ('NumPy'),
+  ('DAX'), ('Power Query'), ('A/B Testing'), ('Data Visualization'), ('Dashboarding'),
+  ('Orchestration'), ('CI/CD'), ('Terraform'), ('PostgreSQL'), ('MySQL'), ('MongoDB'),
+  ('NoSQL'), ('REST'), ('API'), ('JSON'), ('Pipeline'), ('MLflow'), ('PySpark'),
+  ('Scikit-learn'), ('Polars')
 ) AS seed(skill_name);
 
 MERGE INTO dim_company AS target
 USING (
   SELECT
     MD5(LOWER(company_name)) AS company_id,
-    company_name,
+    MIN(company_name) AS company_name,
     MIN(display_name) AS display_name,
     CURRENT_TIMESTAMP() AS valid_from,
     CAST(NULL AS TIMESTAMP) AS valid_to,
     TRUE AS is_current
   FROM staging_postings
-  GROUP BY company_name
+  GROUP BY MD5(LOWER(company_name))
 ) AS source
 ON target.company_id = source.company_id
 WHEN NOT MATCHED THEN

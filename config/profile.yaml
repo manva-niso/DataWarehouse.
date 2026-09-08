@@ -1,0 +1,29 @@
+# Target user profile for Job Market Pulse matching engine
+# Seed values for user_profile table. Single-row config table.
+profile:
+  target_roles:
+    - DE
+    - DA
+    - BI
+  target_skills:
+    - SQL
+    - Python
+    - Databricks
+    - Spark
+    - dbt
+    - BigQuery
+    - Snowflake
+    - Power BI
+    - Tableau
+    - Airflow
+    - Docker
+    - AWS
+  preferred_locations:
+    - Remote
+    - India
+    - Bengaluru
+    - Bangalore
+  remote_preference: ANY  # ANY, REMOTE_ONLY, HYBRID, ONSITE
+  min_salary: 0.0
+  currency: INR
+  seniority_level: ENTRY  # ENTRY, MID, SENIOR, LEAD

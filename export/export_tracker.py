@@ -7,13 +7,15 @@ Reads and writes go through dbio to the Databricks warehouse.
 """
 
 import logging
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 from dbio import query_rows, run_sql
 from openpyxl import Workbook
 
 logger = logging.getLogger(__name__)
+
+ALLOWED_STATUSES = ("SAVED", "APPLIED", "INTERVIEW", "OFFER", "REJECTED")
 
 COLUMNS = [
     ("posting_id", "Posting ID"),
@@ -34,6 +36,10 @@ class PostingNotFoundError(Exception):
 
 class FutureDateError(ValueError):
     """Raised when mark_application receives a date in the future."""
+
+
+class InvalidStatusError(ValueError):
+    """Raised when mark_application receives an unknown status."""
 
 
 def _format_row(row) -> list:
@@ -78,29 +84,44 @@ def export_tracker_to_excel(output_path: str) -> str:
         return _export_tracker_to_excel(str(stamped))
 
 
-def mark_application(posting_id: str, date_applied: date) -> None:
-    """Upsert an application date after validating the posting and the date."""
+def mark_application(posting_id: str, date_applied: date, status: str = "APPLIED") -> None:
+    """Upsert an application with status and date after validating the posting, status, and date."""
     if date_applied > date.today():
         raise FutureDateError(f"date_applied {date_applied} is in the future")
+    if status not in ALLOWED_STATUSES:
+        raise InvalidStatusError(f"status {status!r} is invalid; must be one of {ALLOWED_STATUSES}")
     exists = query_rows(
         "SELECT 1 FROM fact_job_posting WHERE posting_id = :posting_id LIMIT 1",
         {"posting_id": posting_id},
     )
     if not exists:
         raise PostingNotFoundError(f"No posting found with posting_id {posting_id!r}")
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
     run_sql(
         """
         MERGE INTO applications AS target
         USING (
-          SELECT :posting_id AS posting_id, :date_applied AS date_applied
+          SELECT
+            :posting_id AS posting_id,
+            :date_applied AS date_applied,
+            :status AS status,
+            :updated_at AS updated_at
         ) AS source
         ON target.posting_id = source.posting_id
         WHEN MATCHED THEN
-          UPDATE SET date_applied = source.date_applied
+          UPDATE SET
+            date_applied = source.date_applied,
+            status = source.status,
+            updated_at = source.updated_at
         WHEN NOT MATCHED THEN
-          INSERT (posting_id, date_applied)
-          VALUES (source.posting_id, source.date_applied)
+          INSERT (posting_id, date_applied, status, updated_at)
+          VALUES (source.posting_id, source.date_applied, source.status, source.updated_at)
         """,
-        {"posting_id": posting_id, "date_applied": date_applied.isoformat()},
+        {
+            "posting_id": posting_id,
+            "date_applied": date_applied.isoformat(),
+            "status": status,
+            "updated_at": now,
+        },
     )
-    logger.info("Marked posting %s as applied on %s", posting_id, date_applied)
+    logger.info("Marked posting %s as %s on %s", posting_id, status, date_applied)

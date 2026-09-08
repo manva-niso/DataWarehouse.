@@ -261,6 +261,10 @@ without the slicer, source artifacts would be misread as market trends.
 | Skills | Expanded seed dictionary (~50), not NLP extraction |
 | Deployment | Streamlit local first; cloud later |
 | Matching app filter | Live postings only; archived view-only |
+| Streamlit App (Phase C) | Code-complete with 5 pages, multi-criteria filtering, and on-demand Ingest/Archive actions |
+| Marts (Phase B & D) | All 11 marts deployed and verified live in Databricks |
+| Tests | 77 passing (`uv run pytest`) |
+
 
 ---
 

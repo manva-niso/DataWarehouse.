@@ -21,6 +21,12 @@ WITH normalized AS (
     CAST(NULL AS DATE) AS closing_date,
     COALESCE(TRIM(get_json_object(payload, '$.title')), 'Unknown') AS job_title,
     get_json_object(payload, '$.description') AS description,
+    get_json_object(payload, '$.redirect_url') AS posting_url,
+    get_json_object(payload, '$.redirect_url') AS apply_url,
+    CAST(get_json_object(payload, '$.salary_min') AS DOUBLE) AS salary_min,
+    CAST(get_json_object(payload, '$.salary_max') AS DOUBLE) AS salary_max,
+    COALESCE(get_json_object(payload, '$.salary_currency'), get_json_object(payload, '$.currency')) AS currency,
+    COALESCE(get_json_object(payload, '$.contract_type'), get_json_object(payload, '$.contract_time')) AS employment_type,
     ingested_at AS seen_at,
     (
       get_json_object(payload, '$.title') IS NULL
@@ -50,6 +56,12 @@ WITH normalized AS (
     TO_DATE(SUBSTR(get_json_object(payload, '$.application_deadline'), 1, 10)) AS closing_date,
     COALESCE(TRIM(get_json_object(payload, '$.title')), 'Unknown') AS job_title,
     get_json_object(payload, '$.content') AS description,
+    get_json_object(payload, '$.absolute_url') AS posting_url,
+    get_json_object(payload, '$.absolute_url') AS apply_url,
+    CAST(NULL AS DOUBLE) AS salary_min,
+    CAST(NULL AS DOUBLE) AS salary_max,
+    CAST(NULL AS STRING) AS currency,
+    CAST(NULL AS STRING) AS employment_type,
     ingested_at AS seen_at,
     (
       get_json_object(payload, '$.title') IS NULL
@@ -79,6 +91,12 @@ WITH normalized AS (
     TO_DATE(FROM_UNIXTIME(CAST(get_json_object(payload, '$.closedAt') AS BIGINT) / 1000)) AS closing_date,
     COALESCE(TRIM(get_json_object(payload, '$.text')), 'Unknown') AS job_title,
     get_json_object(payload, '$.descriptionPlain') AS description,
+    get_json_object(payload, '$.hostedUrl') AS posting_url,
+    get_json_object(payload, '$.applyUrl') AS apply_url,
+    CAST(get_json_object(payload, '$.salaryRange.min') AS DOUBLE) AS salary_min,
+    CAST(get_json_object(payload, '$.salaryRange.max') AS DOUBLE) AS salary_max,
+    get_json_object(payload, '$.salaryRange.currency') AS currency,
+    get_json_object(payload, '$.categories.commitment') AS employment_type,
     ingested_at AS seen_at,
     (
       get_json_object(payload, '$.text') IS NULL
@@ -125,6 +143,12 @@ WITH normalized AS (
       get_json_object(payload, '$.description.company'),
       get_json_object(payload, '$.description')
     ) AS description,
+    get_json_object(payload, '$.url') AS posting_url,
+    get_json_object(payload, '$.url') AS apply_url,
+    CAST(get_json_object(payload, '$.payRangeDetails.minSalary') AS DOUBLE) AS salary_min,
+    CAST(get_json_object(payload, '$.payRangeDetails.maxSalary') AS DOUBLE) AS salary_max,
+    get_json_object(payload, '$.payRangeDetails.currency') AS currency,
+    get_json_object(payload, '$.employmentType') AS employment_type,
     ingested_at AS seen_at,
     (
       get_json_object(payload, '$.name') IS NULL
@@ -159,9 +183,23 @@ normalized_clean AS (
       'Unknown'
     ) AS location_normalized,
     job_title,
+    CASE
+      WHEN LOWER(job_title) RLIKE '\\b(data engineer|data engineering|analytics engineer|etl|pipeline|big data|database engineer|warehouse engineer)\\b' THEN 'DE'
+      WHEN LOWER(job_title) RLIKE '\\b(business intelligence|bi developer|bi engineer|bi analyst|tableau developer|power bi developer)\\b' THEN 'BI'
+      WHEN LOWER(job_title) RLIKE '\\b(data scientist|data science|machine learning|ml engineer|mle|ai engineer|nlp|deep learning|computer vision)\\b' THEN 'DS'
+      WHEN LOWER(job_title) RLIKE '\\b(data analyst|data analytics|business analyst|product analyst|reporting analyst|operations analyst|quantitative analyst)\\b' THEN 'DA'
+      WHEN LOWER(job_title) RLIKE '\\b(software engineer|software developer|backend|frontend|full stack|fullstack|devops|sre|systems engineer|programmer|ios developer|android developer|web developer|platform engineer)\\b' THEN 'SWE'
+      ELSE 'OTHER'
+    END AS role_family,
     date_posted,
     closing_date,
-    description,
+    TRIM(REGEXP_REPLACE(REGEXP_REPLACE(COALESCE(description, ''), '<[^>]+>', ' '), '\\s+', ' ')) AS description,
+    posting_url,
+    apply_url,
+    salary_min,
+    salary_max,
+    currency,
+    employment_type,
     seen_at,
     is_incomplete
   FROM normalized
@@ -174,9 +212,16 @@ SELECT
   location_raw,
   location_normalized,
   job_title,
+  role_family,
   date_posted,
   closing_date,
   description,
+  posting_url,
+  apply_url,
+  salary_min,
+  salary_max,
+  currency,
+  employment_type,
   seen_at,
   is_incomplete,
   CONCAT(LOWER(company_name), '|', LOWER(job_title), '|', LOWER(location_normalized)) AS dedup_key

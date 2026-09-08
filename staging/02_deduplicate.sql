@@ -14,9 +14,16 @@ WITH grouped AS (
     location_raw,
     location_normalized,
     job_title,
+    role_family,
     date_posted,
     closing_date,
     description,
+    posting_url,
+    apply_url,
+    salary_min,
+    salary_max,
+    currency,
+    employment_type,
     is_incomplete,
     dedup_key,
     MIN(seen_at) AS first_seen_at,
@@ -30,17 +37,33 @@ WITH grouped AS (
     location_raw,
     location_normalized,
     job_title,
+    role_family,
     date_posted,
     closing_date,
     description,
+    posting_url,
+    apply_url,
+    salary_min,
+    salary_max,
+    currency,
+    employment_type,
     is_incomplete,
     dedup_key
 ),
+-- 1. Deduplicate by posting_id: if title/location changed across pulls, take the most recently seen version
+latest_per_posting AS (
+  SELECT
+    *,
+    ROW_NUMBER() OVER (PARTITION BY posting_id ORDER BY last_seen_at DESC, first_seen_at DESC) AS pid_rn
+  FROM grouped
+),
+-- 2. Deduplicate across sources/postings by dedup_key (company + title + location)
 ranked AS (
   SELECT
     *,
     ROW_NUMBER() OVER (PARTITION BY dedup_key ORDER BY first_seen_at ASC, posting_id ASC) AS dedup_rn
-  FROM grouped
+  FROM latest_per_posting
+  WHERE pid_rn = 1
 )
 SELECT
   posting_id,
@@ -50,9 +73,16 @@ SELECT
   location_raw,
   location_normalized,
   job_title,
+  role_family,
   date_posted,
   closing_date,
   description,
+  posting_url,
+  apply_url,
+  salary_min,
+  salary_max,
+  currency,
+  employment_type,
   first_seen_at,
   last_seen_at,
   is_incomplete

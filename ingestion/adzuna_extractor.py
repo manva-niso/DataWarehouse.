@@ -60,8 +60,16 @@ def _adzuna_credentials() -> tuple[str, str]:
     app_id = os.getenv("ADZUNA_APP_ID")
     app_key = os.getenv("ADZUNA_APP_KEY")
     if not app_id or not app_key:
+        try:
+            import streamlit as st
+            if hasattr(st, "secrets"):
+                app_id = app_id or st.secrets.get("ADZUNA_APP_ID")
+                app_key = app_key or st.secrets.get("ADZUNA_APP_KEY")
+        except Exception:
+            pass
+    if not app_id or not app_key:
         raise AdzunaConfigError(
-            "ADZUNA_APP_ID and ADZUNA_APP_KEY must be set in the local .env file"
+            "ADZUNA_APP_ID and ADZUNA_APP_KEY must be set in the local .env file or Streamlit secrets"
         )
     return app_id, app_key
 

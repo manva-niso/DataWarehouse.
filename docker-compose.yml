@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: job-market-pulse
+    restart: unless-stopped
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    volumes:
+      # Mount exports directory for persistent cold-storage archives and Excel downloads
+      - ./exports:/app/exports
+      # Optional: mount custom companies and user profile
+      - ./config/profile.yaml:/app/config/profile.yaml:ro
+      - ./config/companies.yaml:/app/config/companies.yaml:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+          cpus: "1.0"
+        reservations:
+          memory: 256M
+          cpus: "0.25"

@@ -7,6 +7,7 @@ from openpyxl import load_workbook
 from export.export_tracker import (
     FutureDateError,
     PostingNotFoundError,
+    InvalidStatusError,
     export_tracker_to_excel,
     mark_application,
 )
@@ -80,3 +81,17 @@ def test_mark_application_valid_posting_upserts():
     assert "MERGE INTO applications" in sql
     assert params["posting_id"] == "adzuna-1"
     assert params["date_applied"] == "2026-08-01"
+    assert params["status"] == "APPLIED"
+
+
+def test_mark_application_invalid_status_raises_error():
+    with pytest.raises(InvalidStatusError):
+        mark_application("adzuna-1", date(2026, 8, 1), status="INVALID_STATUS")
+
+
+def test_mark_application_with_custom_status_upserts():
+    with patch("export.export_tracker.query_rows", return_value=[{"1": 1}]):
+        with patch("export.export_tracker.run_sql") as mock_run_sql:
+            mark_application("adzuna-1", date(2026, 8, 1), status="INTERVIEW")
+    sql, params = mock_run_sql.call_args.args
+    assert params["status"] == "INTERVIEW"

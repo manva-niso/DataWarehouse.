@@ -69,9 +69,13 @@ def test_main_second_run_logs_already_running_and_exits(mock_kill, mock_log, tmp
 @patch("orchestration.run_pipeline.run_data_quality_checks", return_value=0)
 @patch("orchestration.run_pipeline.load_dim_company")
 @patch("orchestration.run_pipeline.load_fact_job_posting")
+@patch("orchestration.run_pipeline.load_user_profile")
 @patch("orchestration.run_pipeline.refresh_mart_views")
+@patch("orchestration.run_pipeline.archive_stale_postings", return_value={"archived": 0, "deleted": 0})
 def test_main_successful_run_logs_overall_success(
+    mock_archive,
     mock_refresh,
+    mock_profile,
     mock_facts,
     mock_dims,
     mock_dq,
@@ -90,6 +94,20 @@ def test_main_successful_run_logs_overall_success(
     ]
     assert overall_call
     assert not (tmp_path / "lock").exists()
+
+
+def test_archive_stale_postings_rejects_non_positive_retention():
+    with pytest.raises(ValueError):
+        rp.archive_stale_postings(0)
+    with pytest.raises(ValueError):
+        rp.archive_stale_postings(-5)
+
+
+@patch("orchestration.archive_encoder.encode_and_purge_outdated_postings", return_value={"encoded_count": 3, "purged_count": 3})
+def test_archive_stale_postings_executes_insert_and_delete(mock_encode):
+    result = rp.archive_stale_postings(7)
+    assert result == {"archived": 3, "deleted": 3}
+    mock_encode.assert_called_once_with(retention_days=7)
 
 
 @patch("orchestration.run_pipeline._fetch_source", side_effect=RuntimeError("all down"))

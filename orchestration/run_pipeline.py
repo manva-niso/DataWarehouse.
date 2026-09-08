@@ -29,7 +29,7 @@ from ingestion.lever_extractor import fetch_lever_jobs
 from ingestion.rippling_extractor import fetch_rippling_jobs
 from marts.refresh import refresh_mart_views
 from staging.data_quality_checks import run_data_quality_checks
-from warehouse.loaders import load_dim_company, load_fact_job_posting
+from warehouse.loaders import load_dim_company, load_fact_job_posting, load_user_profile
 
 logger = logging.getLogger(__name__)
 
@@ -119,6 +119,20 @@ def cleanup_raw_tables(retention_days: int = 30) -> dict[str, int]:
         deleted[table] = affected
         logger.info("Deleted %d rows from %s", affected, table)
     return deleted
+
+
+def archive_stale_postings(retention_days: int = 7) -> dict[str, int]:
+    """Archive and purge stale postings from database into compressed cold-storage archive."""
+    if retention_days <= 0:
+        raise ValueError(f"retention_days must be positive; got {retention_days}")
+
+    from orchestration.archive_encoder import encode_and_purge_outdated_postings
+
+    res = encode_and_purge_outdated_postings(retention_days=retention_days)
+    archived_count = res.get("encoded_count", 0)
+    deleted_count = res.get("purged_count", 0)
+    logger.info("Archived (encoded) %d and purged %d stale postings from database", archived_count, deleted_count)
+    return {"archived": archived_count, "deleted": deleted_count}
 
 
 def _company_configs() -> list[dict]:
@@ -235,8 +249,12 @@ def main() -> None:
                 logger.info("Starting warehouse loads")
                 load_dim_company()
                 load_fact_job_posting()
+                load_user_profile()
                 logger.info("Starting mart refresh")
                 refresh_mart_views()
+                logger.info("Starting archive retention")
+                archive_res = archive_stale_postings(retention_days=7)
+                log_pipeline_run(run_id, "SUCCESS", {"ARCHIVE": archive_res["archived"]})
                 overall = "SUCCESS" if len(succeeded) == len(SOURCES) else "PARTIAL"
             except Exception as exc:  # noqa: BLE001
                 logger.error("Downstream stages failed: %s", exc)

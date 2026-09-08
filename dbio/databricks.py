@@ -32,22 +32,35 @@ def _load_env() -> None:
     load_dotenv(PROJECT_ROOT / ".env")
 
 
+def _get_setting(key: str, default: str | None = None) -> str | None:
+    val = os.getenv(key)
+    if val:
+        return val
+    try:
+        import streamlit as st
+        if hasattr(st, "secrets") and key in st.secrets:
+            return str(st.secrets[key])
+    except Exception:
+        pass
+    return default
+
+
 def _connection():
     _load_env()
-    host = os.getenv("DATABRICKS_HOST")
-    http_path = os.getenv("DATABRICKS_HTTP_PATH")
-    token = os.getenv("DATABRICKS_TOKEN")
+    host = _get_setting("DATABRICKS_HOST")
+    http_path = _get_setting("DATABRICKS_HTTP_PATH")
+    token = _get_setting("DATABRICKS_TOKEN")
     if not host or not http_path or not token:
         raise RuntimeError(
             "DATABRICKS_HOST, DATABRICKS_HTTP_PATH and DATABRICKS_TOKEN "
-            "must be set in the local .env file"
+            "must be set in the local .env file or Streamlit Cloud secrets"
         )
     return sql.connect(
         server_hostname=host,
         http_path=http_path,
         access_token=token,
-        catalog=os.getenv("DATABRICKS_CATALOG", "workspace"),
-        schema=os.getenv("DATABRICKS_SCHEMA", "default"),
+        catalog=_get_setting("DATABRICKS_CATALOG", "workspace"),
+        schema=_get_setting("DATABRICKS_SCHEMA", "default"),
         enable_telemetry=False,
     )
 
