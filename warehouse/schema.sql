@@ -55,7 +55,8 @@ USING (
     ('greenhouse', 'Greenhouse'),
     ('lever', 'Lever'),
     ('rippling', 'Rippling'),
-    ('adzuna', 'Adzuna')
+    ('adzuna', 'Adzuna'),
+    ('ashby', 'Ashby')
   AS seed(source_id, source_name)
 ) AS source
 ON target.source_id = source.source_id
@@ -154,6 +155,14 @@ CREATE TABLE IF NOT EXISTS raw_adzuna (
 )
 USING DELTA
 COMMENT 'Append-only raw Adzuna API payloads.';
+
+CREATE TABLE IF NOT EXISTS raw_ashby (
+  payload STRING NOT NULL,
+  run_id STRING NOT NULL,
+  ingested_at TIMESTAMP NOT NULL
+)
+USING DELTA
+COMMENT 'Append-only raw Ashby API payloads.';
 
 -- Manually maintained application tracking with status lifecycle.
 CREATE TABLE IF NOT EXISTS applications (

@@ -170,6 +170,52 @@ WITH normalized AS (
       )) IS NULL
     ) AS is_incomplete
   FROM raw_rippling
+
+  UNION ALL
+
+  SELECT
+    CONCAT('ashby-', get_json_object(payload, '$.id')) AS posting_id,
+    'ashby' AS source_id,
+    COALESCE(
+      TRIM(get_json_object(payload, '$.company_display_name')),
+      'Unknown'
+    ) AS company_name,
+    COALESCE(
+      TRIM(get_json_object(payload, '$.company_display_name')),
+      'Unknown'
+    ) AS display_name,
+    COALESCE(
+      get_json_object(payload, '$.location'),
+      CONCAT_WS(', ',
+        get_json_object(payload, '$.address.postalAddress.addressLocality'),
+        get_json_object(payload, '$.address.postalAddress.addressCountry')
+      ),
+      CASE WHEN get_json_object(payload, '$.isRemote') = 'true' THEN 'Remote' ELSE 'Unspecified' END
+    ) AS location_raw,
+    TO_DATE(SUBSTR(get_json_object(payload, '$.publishedAt'), 1, 10)) AS date_posted,
+    CAST(NULL AS DATE) AS closing_date,
+    COALESCE(TRIM(get_json_object(payload, '$.title')), 'Unknown') AS job_title,
+    COALESCE(
+      get_json_object(payload, '$.descriptionPlain'),
+      get_json_object(payload, '$.descriptionHtml')
+    ) AS description,
+    get_json_object(payload, '$.jobUrl') AS posting_url,
+    COALESCE(
+      get_json_object(payload, '$.applyUrl'),
+      get_json_object(payload, '$.jobUrl')
+    ) AS apply_url,
+    CAST(NULL AS DOUBLE) AS salary_min,
+    CAST(NULL AS DOUBLE) AS salary_max,
+    CAST(NULL AS STRING) AS currency,
+    get_json_object(payload, '$.employmentType') AS employment_type,
+    ingested_at AS seen_at,
+    (
+      get_json_object(payload, '$.title') IS NULL
+      OR get_json_object(payload, '$.company_display_name') IS NULL
+      OR (get_json_object(payload, '$.location') IS NULL AND get_json_object(payload, '$.address.postalAddress.addressLocality') IS NULL)
+      OR TO_DATE(SUBSTR(get_json_object(payload, '$.publishedAt'), 1, 10)) IS NULL
+    ) AS is_incomplete
+  FROM raw_ashby
 ),
 normalized_clean AS (
   SELECT

@@ -17,7 +17,7 @@ from dbio import insert_rows
 
 logger = logging.getLogger(__name__)
 
-ALLOWED_RAW_SOURCES = frozenset({"greenhouse", "lever", "rippling", "adzuna"})
+ALLOWED_RAW_SOURCES = frozenset({"greenhouse", "lever", "rippling", "adzuna", "ashby"})
 
 
 def write_to_bigquery_raw(source: str, payload: list[dict], run_id: str) -> int:

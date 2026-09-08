@@ -23,6 +23,7 @@ from dotenv import load_dotenv
 
 from dbio import insert_rows, query_rows, run_sql, run_sql_script
 from ingestion.adzuna_extractor import RESULTS_PER_PAGE, fetch_adzuna_jobs
+from ingestion.ashby_extractor import fetch_ashby_jobs
 from ingestion.bigquery_io import write_to_bigquery_raw
 from ingestion.greenhouse_extractor import fetch_greenhouse_jobs
 from ingestion.lever_extractor import fetch_lever_jobs
@@ -33,7 +34,7 @@ from warehouse.loaders import load_dim_company, load_fact_job_posting, load_user
 
 logger = logging.getLogger(__name__)
 
-SOURCES = ("adzuna", "greenhouse", "lever", "rippling")
+SOURCES = ("adzuna", "greenhouse", "lever", "rippling", "ashby")
 LOCK_FILE = Path(__file__).with_name(".pipeline.lock")
 STAGING_SQL_DIR = Path(__file__).parents[1] / "staging"
 DEFAULT_WATERMARK_DAYS = 30
@@ -113,7 +114,7 @@ def cleanup_raw_tables(retention_days: int = 30) -> dict[str, int]:
         raise ValueError(f"retention_days must be positive; got {retention_days}")
     template = Path(__file__).with_name("cleanup_raw_tables.sql").read_text(encoding="utf-8")
     deleted: dict[str, int] = {}
-    for source in ("greenhouse", "lever", "rippling", "adzuna"):
+    for source in ("greenhouse", "lever", "rippling", "adzuna", "ashby"):
         table = f"raw_{source}"
         affected = run_sql(template.format(table=table, retention_days=retention_days))
         deleted[table] = affected
@@ -163,11 +164,18 @@ def _fetch_source(source: str) -> list[dict]:
         if config_companies:
             results = []
             for entry in config_companies:
-                for job in fetch_greenhouse_jobs(entry["greenhouse_board_token"]):
-                    results.append({
-                        **job,
-                        "company_display_name": entry.get("display_name") or "Unknown",
-                    })
+                token = entry["greenhouse_board_token"]
+                try:
+                    for job in fetch_greenhouse_jobs(token):
+                        results.append({
+                            **job,
+                            "company_display_name": entry.get("display_name") or "Unknown",
+                            "company_industry": entry.get("industry"),
+                            "company_locations": entry.get("locations"),
+                            "hiring_pace": entry.get("hiring_pace"),
+                        })
+                except Exception as exc:
+                    logger.warning("Error fetching Greenhouse jobs for %s (%s): %s", entry.get("display_name"), token, exc)
             return results
         token = os.getenv("GREENHOUSE_BOARD_TOKEN")
         if not token:
@@ -180,13 +188,19 @@ def _fetch_source(source: str) -> list[dict]:
             slug = entry.get("lever_company_slug")
             if not slug:
                 continue
-            for posting in fetch_lever_jobs(slug):
-                results.append({
-                    **posting,
-                    "company_display_name": entry.get("display_name")
-                    or posting.get("company")
-                    or "Unknown",
-                })
+            try:
+                for posting in fetch_lever_jobs(slug):
+                    results.append({
+                        **posting,
+                        "company_display_name": entry.get("display_name")
+                        or posting.get("company")
+                        or "Unknown",
+                        "company_industry": entry.get("industry"),
+                        "company_locations": entry.get("locations"),
+                        "hiring_pace": entry.get("hiring_pace"),
+                    })
+            except Exception as exc:
+                logger.warning("Error fetching Lever jobs for %s (%s): %s", entry.get("display_name"), slug, exc)
         return results
     if source == "rippling":
         results = []
@@ -194,11 +208,35 @@ def _fetch_source(source: str) -> list[dict]:
             slug = entry.get("rippling_board_slug")
             if not slug:
                 continue
-            for job in fetch_rippling_jobs(slug):
-                results.append({
-                    **job,
-                    "company_display_name": entry.get("display_name") or "Unknown",
-                })
+            try:
+                for job in fetch_rippling_jobs(slug):
+                    results.append({
+                        **job,
+                        "company_display_name": entry.get("display_name") or "Unknown",
+                        "company_industry": entry.get("industry"),
+                        "company_locations": entry.get("locations"),
+                        "hiring_pace": entry.get("hiring_pace"),
+                    })
+            except Exception as exc:
+                logger.warning("Error fetching Rippling jobs for %s (%s): %s", entry.get("display_name"), slug, exc)
+        return results
+    if source == "ashby":
+        results = []
+        for entry in companies:
+            slug = entry.get("ashby_board_slug")
+            if not slug:
+                continue
+            try:
+                for job in fetch_ashby_jobs(slug):
+                    results.append({
+                        **job,
+                        "company_display_name": entry.get("display_name") or "Unknown",
+                        "company_industry": entry.get("industry"),
+                        "company_locations": entry.get("locations"),
+                        "hiring_pace": entry.get("hiring_pace"),
+                    })
+            except Exception as exc:
+                logger.warning("Error fetching Ashby jobs for %s (%s): %s", entry.get("display_name"), slug, exc)
         return results
     raise ValueError(f"Unknown source {source!r}")
 

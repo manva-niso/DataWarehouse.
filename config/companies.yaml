@@ -1,16 +1,341 @@
+# Job Market Pulse - Tracked Companies Configuration
+#
+# Contains verified public ATS identifiers (Greenhouse, Lever, Ashby, Rippling)
+# alongside rich company metadata: Industry, Key India Locations, and Hiring Pace.
+# All board tokens are public endpoints requiring zero secret API keys.
+
 companies:
-  - display_name: Figma
-    greenhouse_board_token: figma
+  # ==============================================================================
+  # 🇮🇳 Indian Tech Unicorns & Aggressive Hirers in India
+  # ==============================================================================
+  - display_name: Paytm
+    lever_company_slug: paytm
+    industry: Fintech & Payments
+    locations:
+      - Noida
+      - Bengaluru
+      - Mumbai
+    hiring_pace: Aggressive
+    notes: India's premier digital payments and financial services ecosystem.
+
+  - display_name: Meesho
+    lever_company_slug: meesho
+    industry: E-Commerce & Social Commerce
+    locations:
+      - Bengaluru
+      - Remote India
+    hiring_pace: Aggressive
+    notes: High-scale social e-commerce platform with large data platform engineering team.
+
+  - display_name: Slice
+    greenhouse_board_token: slice
+    industry: Fintech & Neo-Banking
+    locations:
+      - Bengaluru
+    hiring_pace: Aggressive
+    notes: Fast-growing consumer credit and UPI neo-banking platform in India.
+
+  - display_name: InMobi
+    greenhouse_board_token: inmobi
+    industry: AdTech & Consumer Intelligence
+    locations:
+      - Bengaluru
+      - Remote India
+    hiring_pace: Aggressive
+    notes: Global mobile advertising and data monetization pioneer headquartered in Bengaluru.
+
+  - display_name: Porter
+    lever_company_slug: porter
+    industry: Logistics & Supply Chain
+    locations:
+      - Bengaluru
+      - Mumbai
+    hiring_pace: Aggressive
+    notes: Tech-enabled logistics unicorn optimizing intra-city delivery networks.
+
+  - display_name: Thoughtworks
+    greenhouse_board_token: thoughtworks
+    industry: Tech Consultancy & Cloud Solutions
+    locations:
+      - Bengaluru
+      - Pune
+      - Hyderabad
+      - Gurgaon
+      - Chennai
+    hiring_pace: Aggressive
+    notes: Global technology consultancy with extensive engineering hubs across India.
+
+  - display_name: CRED
+    lever_company_slug: cred
+    industry: Fintech & Member Network
+    locations:
+      - Bengaluru
+    hiring_pace: Aggressive
+    notes: High-trust financial platform for creditworthy individuals with modern microservices stack.
+
+  - display_name: Groww
+    greenhouse_board_token: groww
+    industry: WealthTech & Stock Broking
+    locations:
+      - Bengaluru
+    hiring_pace: Moderate
+    notes: India's leading investment platform offering stocks, mutual funds, and direct investing.
+
+  - display_name: Navi
+    ashby_board_slug: navi
+    industry: Digital Lending & Insurance
+    locations:
+      - Bengaluru
+    hiring_pace: Aggressive
+    notes: Tech-driven personal finance and health insurance platform founded by Sachin Bansal.
+
+  - display_name: Postman
+    greenhouse_board_token: postman
+    industry: Developer Tools & API Platform
+    locations:
+      - Bengaluru
+      - Remote India
+    hiring_pace: Moderate
+    notes: Leading API collaboration and testing platform with roots in Bengaluru.
+
+  # ==============================================================================
+  # 📊 Modern Data Stack & Cloud Infrastructure (High Data Engineering Demand)
+  # ==============================================================================
+  - display_name: Databricks
+    greenhouse_board_token: databricks
+    industry: Data Lakehouse & AI
+    locations:
+      - Bengaluru
+      - Remote India
+    hiring_pace: Aggressive
+    notes: Creators of Apache Spark, Delta Lake, and the unified Lakehouse architecture.
+
+  - display_name: Atlan
+    ashby_board_slug: atlan
+    industry: Active Metadata & Data Governance
+    locations:
+      - New Delhi
+      - Bengaluru
+      - Remote India
+    hiring_pace: Aggressive
+    notes: Top Indian Data Engineering unicorn pioneering active metadata and collaboration for data teams.
+
+  - display_name: Fivetran
+    greenhouse_board_token: fivetran
+    industry: Automated Data Integration & ELT
+    locations:
+      - Bengaluru
+      - Remote India
+    hiring_pace: Aggressive
+    notes: Automated data movement platform with a massive R&D engineering center in Bengaluru.
+
+  - display_name: Confluent
+    ashby_board_slug: confluent
+    industry: Real-Time Event Streaming (Apache Kafka)
+    locations:
+      - Bengaluru
+      - Remote India
+    hiring_pace: Aggressive
+    notes: Creators of Apache Kafka delivering real-time streaming data infrastructure.
+
+  - display_name: Astronomer
+    ashby_board_slug: astronomer
+    industry: Data Orchestration (Apache Airflow)
+    locations:
+      - Remote India
+      - Remote
+    hiring_pace: Aggressive
+    notes: The commercial Apache Airflow company powering enterprise data pipeline orchestration.
+
+  - display_name: Prefect
+    ashby_board_slug: prefect
+    industry: Dataflow Coordination & Workflows
+    locations:
+      - Remote
+    hiring_pace: Moderate
+    notes: Modern Python-native workflow coordination platform.
+
+  - display_name: MongoDB
+    greenhouse_board_token: mongodb
+    industry: Modern Database Platform
+    locations:
+      - Bengaluru
+      - Gurugram
+      - Remote India
+    hiring_pace: Aggressive
+    notes: Developer data platform with major engineering and support presence in India.
+
+  - display_name: Elastic
+    greenhouse_board_token: elastic
+    industry: Search & Observability (Elasticsearch)
+    locations:
+      - Bengaluru
+      - Pune
+      - Remote India
+    hiring_pace: Aggressive
+    notes: The company behind Elasticsearch, Kibana, and Beats with distributed teams across India.
+
+  - display_name: Cockroach Labs
+    greenhouse_board_token: cockroachlabs
+    industry: Distributed SQL Database
+    locations:
+      - Remote
+    hiring_pace: Moderate
+    notes: Creators of CockroachDB, next-generation resilient cloud-native SQL database.
+
+  - display_name: Datadog
+    greenhouse_board_token: datadog
+    industry: Cloud Observability & Security
+    locations:
+      - Bengaluru
+      - Remote India
+    hiring_pace: Moderate
+    notes: Essential monitoring and observability platform for cloud-scale applications.
+
+  # ==============================================================================
+  # 🌐 Global Cloud, Enterprise & SaaS Leaders with India Hubs
+  # ==============================================================================
+  - display_name: Okta
+    greenhouse_board_token: okta
+    industry: Identity & Cloud Security
+    locations:
+      - Bengaluru
+      - Remote India
+    hiring_pace: Aggressive
+    notes: Leading enterprise identity provider with a rapidly expanding Bengaluru technology hub.
+
+  - display_name: GitLab
+    greenhouse_board_token: gitlab
+    industry: DevOps & DevSecOps Platform
+    locations:
+      - Remote India
+      - Remote
+    hiring_pace: Aggressive
+    notes: All-remote DevSecOps platform with strong software and data engineering hiring in India.
+
+  - display_name: Cloudflare
+    greenhouse_board_token: cloudflare
+    industry: Cloud Connectivity & Security
+    locations:
+      - Bengaluru
+      - Remote India
+    hiring_pace: Aggressive
+    notes: Global network platform protecting and accelerating internet infrastructure.
+
+  - display_name: Twilio
+    greenhouse_board_token: twilio
+    industry: Customer Communications Platform
+    locations:
+      - Bengaluru
+      - Remote India
+    hiring_pace: Aggressive
+    notes: Cloud communications APIs with extensive engineering operations in Bengaluru.
+
+  - display_name: Roblox
+    greenhouse_board_token: roblox
+    industry: Gaming & Distributed 3D Engine
+    locations:
+      - Bengaluru
+    hiring_pace: Aggressive
+    notes: Massive distributed multiplayer game platform expanding engineering presence in Bengaluru.
+
+  - display_name: Airbnb
+    greenhouse_board_token: airbnb
+    industry: Travel Tech & Marketplace
+    locations:
+      - Bengaluru
+      - Remote India
+    hiring_pace: Moderate
+    notes: World marketplace with technical operations and analytics based in India.
+
   - display_name: Stripe
     greenhouse_board_token: stripe
+    industry: Global Financial Infrastructure
+    locations:
+      - Bengaluru
+      - Remote India
+    hiring_pace: Moderate
+    notes: Financial infrastructure for the internet with engineering teams in Bengaluru.
+
   - display_name: Coinbase
     greenhouse_board_token: coinbase
-  - display_name: Lever (Demo)
-    lever_company_slug: leverdemo
+    industry: Web3 & Crypto Infrastructure
+    locations:
+      - Remote India
+      - Remote
+    hiring_pace: Moderate
+    notes: Regulated crypto exchange and digital asset infrastructure with remote India staff.
+
+  - display_name: Figma
+    greenhouse_board_token: figma
+    industry: Collaborative Design & Web Assembly
+    locations:
+      - Remote
+    hiring_pace: Moderate
+    notes: Modern collaborative interface design platform.
+
   - display_name: Palantir
     lever_company_slug: palantir
+    industry: Big Data & AI Platforms
+    locations:
+      - Global
+      - Remote
+    hiring_pace: Moderate
+    notes: Enterprise data analytics and decision intelligence platforms (Foundry, Gotham, AIP).
+
+  # ==============================================================================
+  # 🚀 Fast-Growing AI Unicorns on Ashby
+  # ==============================================================================
+  - display_name: Perplexity AI
+    ashby_board_slug: perplexity
+    industry: Generative AI & Conversational Search
+    locations:
+      - Remote
+      - San Francisco
+    hiring_pace: Highly Aggressive
+    notes: Groundbreaking AI search engine delivering direct, cited answers.
+
+  - display_name: Linear
+    ashby_board_slug: linear
+    industry: Modern Issue Tracking & Software Ops
+    locations:
+      - Remote
+    hiring_pace: Moderate
+    notes: High-performance project management built for modern engineering teams.
+
+  - display_name: Ramp
+    ashby_board_slug: ramp
+    industry: Corporate Finance Automation
+    locations:
+      - Remote
+      - New York
+    hiring_pace: Aggressive
+    notes: Hyper-growth financial automation platform automating corporate spend.
+
+  - display_name: Airwallex
+    ashby_board_slug: airwallex
+    industry: Cross-Border Fintech & Banking
+    locations:
+      - Bengaluru
+      - Remote
+    hiring_pace: Aggressive
+    notes: Global payments and financial infrastructure across APAC, India, and EMEA.
+
+  - display_name: Sentry
+    ashby_board_slug: sentry
+    industry: Application Performance & Error Monitoring
+    locations:
+      - Remote
+    hiring_pace: Moderate
+    notes: Developer-first error and performance monitoring for full-stack applications.
+
+  # ==============================================================================
+  # 🏢 Rippling Virtual Workplaces
+  # ==============================================================================
   - display_name: Gather
     rippling_board_slug: gather
-
-# Board identifiers are public/non-secret configuration. Keep API keys and
-# secret tokens in local .env files only.
+    industry: Virtual Workspaces
+    locations:
+      - Remote
+    hiring_pace: Moderate
+    notes: Interactive virtual headquarters and collaborative spaces.

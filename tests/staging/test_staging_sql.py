@@ -7,9 +7,9 @@ def _normalize_sql() -> str:
     return (STAGING_SQL_DIR / "01_normalize_postings.sql").read_text(encoding="utf-8")
 
 
-def test_normalize_sql_covers_all_four_sources():
+def test_normalize_sql_covers_all_sources():
     sql = _normalize_sql()
-    for source in ("raw_adzuna", "raw_greenhouse", "raw_lever", "raw_rippling"):
+    for source in ("raw_adzuna", "raw_greenhouse", "raw_lever", "raw_rippling", "raw_ashby"):
         assert f"FROM {source}" in sql
 
 

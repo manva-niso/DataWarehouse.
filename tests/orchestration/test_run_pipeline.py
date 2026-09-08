@@ -21,6 +21,7 @@ def test_cleanup_raw_tables_returns_deleted_counts(mock_run_sql):
         "raw_lever": 3,
         "raw_rippling": 3,
         "raw_adzuna": 3,
+        "raw_ashby": 3,
     }
     sql = mock_run_sql.call_args.args[0]
     assert "INTERVAL 30 DAY" in sql
