@@ -58,7 +58,7 @@ col_a, col_b = st.columns(2)
 with col_a:
     st.markdown("""
     ### 🔍 [1. Browse Opportunities](Browse)
-    Search through active postings across **Adzuna, Greenhouse, Lever, and Rippling**:
+    Search through active postings across **Adzuna, Greenhouse, Lever, Ashby, and Rippling**:
     - **Role Family**: Data Engineering (DE), Analytics (DA), Science (DS), BI, SWE
     - **Company & Location**: Remote, US, UK, India, and more
     - **Compensation & Skills**: Salary floors and technology stack matching

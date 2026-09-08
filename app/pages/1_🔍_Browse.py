@@ -36,7 +36,7 @@ from orchestration.archive_encoder import (
 st.set_page_config(page_title="Browse Opportunities - Job Market Pulse", page_icon="🔍", layout="wide")
 
 st.title("🔍 Browse Job Opportunities")
-st.caption("Search, filter, and inspect verified job postings across Adzuna, Greenhouse, Lever, and Rippling")
+st.caption("Search, filter, and inspect verified job postings across Adzuna, Greenhouse, Lever, Ashby, and Rippling")
 
 # Render persistent status banners from previous action
 if "action_status" in st.session_state:
@@ -55,7 +55,7 @@ act_col1, act_col2, act_col3 = st.columns([1.5, 1.8, 3.2])
 
 with act_col1:
     if st.button("🔄 Ingest Fresh Jobs", help="Fetch fresh postings from job boards, stage, and update warehouse marts", use_container_width=True):
-        with st.spinner("Fetching latest postings from Greenhouse, Lever, Rippling, and Adzuna..."):
+        with st.spinner("Fetching latest postings from Greenhouse, Lever, Ashby, Rippling, and Adzuna..."):
             try:
                 res = trigger_reload_pipeline()
                 st.session_state["action_status"] = (
@@ -141,7 +141,7 @@ role_families = ["All", "DE", "DA", "DS", "BI", "SWE", "OTHER"]
 selected_role = st.sidebar.selectbox("Role Family", role_families)
 
 # 5. Source Filter
-sources = ["All", "Greenhouse", "Lever", "Rippling", "Adzuna"]
+sources = ["All", "Greenhouse", "Lever", "Ashby", "Rippling", "Adzuna"]
 selected_source = st.sidebar.selectbox("Source", sources)
 
 # 6. Company Filter
