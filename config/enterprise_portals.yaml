@@ -1,0 +1,468 @@
+# Enterprise Career Portals, Fresher Programs & Off-Campus Hiring Hub
+#
+# Maps companies using internal/custom career systems (Workday, SuccessFactors,
+# Oracle Cloud, iCIMS, Campus Portals, and Government Portals) alongside direct
+# application endpoints, key locations in India, and eligibility/hiring tracks.
+
+enterprise_categories:
+  # ==============================================================================
+  # 🌐 Big Tech & Global Engineering Centers (India Hubs)
+  # ==============================================================================
+  big_tech:
+    - company: Google
+      careers_url: https://www.google.com/about/careers/applications/jobs/results/?location=India
+      locations: ["Bengaluru", "Hyderabad", "Gurugram", "Mumbai"]
+      industry: Internet, Cloud & AI
+      programs: ["Software Engineering", "Data Engineering", "Cloud Technical Residency", "STEP Internship"]
+    - company: Microsoft
+      careers_url: https://jobs.careers.microsoft.com/global/en/search?lc=India
+      locations: ["Bengaluru", "Hyderabad (IDC)", "Noida"]
+      industry: Cloud, Enterprise Software & AI
+      programs: ["Microsoft IDC Campus Hiring", "Software Engineering", "Data & Applied Sciences", "Imagine Cup"]
+    - company: Amazon
+      careers_url: https://www.amazon.jobs/en/locations/bangalore-india
+      locations: ["Bengaluru", "Hyderabad", "Chennai", "Pune", "Delhi NCR"]
+      industry: Cloud (AWS), E-Commerce & Logistics
+      programs: ["SDE-1", "Data Engineer 1", "Business Intelligence Engineer", "Amazon University Internship"]
+    - company: Meta
+      careers_url: https://www.metacareers.com/jobs?locations[0]=India
+      locations: ["Bengaluru", "Gurugram", "Remote India"]
+      industry: Social Tech, AI & Metaverse
+      programs: ["Rotational Engineer Program", "Software Engineer", "Research Scientist"]
+    - company: Apple
+      careers_url: https://jobs.apple.com/en-in/search?location=india-INDC
+      locations: ["Bengaluru", "Hyderabad"]
+      industry: Consumer Electronics & Systems
+      programs: ["Hardware/Software Systems", "Data Science & Machine Learning", "Maps Technology"]
+    - company: NVIDIA
+      careers_url: https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite?locationCountry=bc33aa3152ec42d4995f4791a106ed09
+      locations: ["Bengaluru", "Pune", "Hyderabad"]
+      industry: Accelerated Computing, GPUs & AI Hardware
+      programs: ["AI & Deep Learning Software", "CUDA Engineering", "Graduate Engineer Trainee"]
+    - company: Adobe
+      careers_url: https://adobe.wd5.myworkdayjobs.com/external_experienced?locationCountry=bc33aa3152ec42d4995f4791a106ed09
+      locations: ["Bengaluru", "Noida"]
+      industry: Digital Media & Marketing Cloud
+      programs: ["MTS 1", "Data Engineering", "Adobe University Hackathon", "Women in Tech Scholarship"]
+    - company: Netflix
+      careers_url: https://jobs.netflix.com/search?location=Mumbai%2C%20India
+      locations: ["Mumbai", "Bengaluru"]
+      industry: Streaming Media & Distributed Content
+      programs: ["Senior Software Engineering", "Data Science & Engineering", "Content Systems"]
+    - company: Atlassian
+      careers_url: https://www.atlassian.com/company/careers/all-jobs?team=&location=India
+      locations: ["Bengaluru", "Remote India"]
+      industry: Team Collaboration & DevTools
+      programs: ["Graduate Software Engineer", "Data Engineer", "TEAM Anywhere Remote"]
+    - company: Uber
+      careers_url: https://www.uber.com/in/en/careers/list/?location=IND-Bengaluru
+      locations: ["Bengaluru", "Hyderabad"]
+      industry: Mobility & Delivery Marketplaces
+      programs: ["Software Engineer 1", "Data Engineering", "Uber She++", "University Internships"]
+    - company: PayPal
+      careers_url: https://paypal.wd1.myworkdayjobs.com/en-US/jobs?locationCountry=bc33aa3152ec42d4995f4791a106ed09
+      locations: ["Chennai", "Bengaluru", "Hyderabad"]
+      industry: Digital Payments & Financial Technology
+      programs: ["Software Engineer 1", "Data Analytics", "Campus University Drives"]
+    - company: Intuit
+      careers_url: https://jobs.intuit.com/search-jobs/India
+      locations: ["Bengaluru"]
+      industry: Financial Software (TurboTax, QuickBooks)
+      programs: ["Software Engineer 1", "Data Engineer 1", "Intuit Summer Internship"]
+    - company: Walmart Global Tech
+      careers_url: https://walmart.wd5.myworkdayjobs.com/WalmartExternal?locationCountry=bc33aa3152ec42d4995f4791a106ed09
+      locations: ["Bengaluru", "Chennai"]
+      industry: Retail Tech & High-Scale Distribution
+      programs: ["Software Engineer 2", "Data Analyst", "Walmart Spark Plug Off-Campus"]
+    - company: Salesforce
+      careers_url: https://salesforce.wd1.myworkdayjobs.com/External_Career_Site?locationCountry=bc33aa3152ec42d4995f4791a106ed09
+      locations: ["Hyderabad", "Bengaluru", "Mumbai"]
+      industry: CRM & Enterprise Cloud
+      programs: ["Associate Member of Technical Staff (AMTS)", "Futureforce Graduate Program"]
+    - company: ServiceNow
+      careers_url: https://careers.servicenow.com/jobs?locations=India
+      locations: ["Hyderabad", "Bengaluru"]
+      industry: Digital Workflow Automation
+      programs: ["Associate Software Engineer", "Early Career Programs"]
+    - company: Oracle
+      careers_url: https://eeho.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/requisitions?location=India
+      locations: ["Bengaluru", "Hyderabad", "Noida", "Pune"]
+      industry: Cloud Infrastructure & Database
+      programs: ["Server Technology", "Applications Development", "Graduate Hiring"]
+    - company: Qualcomm
+      careers_url: https://qualcomm.wd5.myworkdayjobs.com/External?locationCountry=bc33aa3152ec42d4995f4791a106ed09
+      locations: ["Bengaluru", "Hyderabad", "Chennai", "Noida"]
+      industry: Semiconductors, 5G & Mobile Computing
+      programs: ["Associate Engineer", "Firmware & Kernel Development"]
+    - company: Samsung R&D (SRI-B / SRI-N)
+      careers_url: https://www.samsung.com/in/aboutsamsung/careers/
+      locations: ["Bengaluru", "Noida"]
+      industry: Consumer Electronics & AI Research
+      programs: ["PRISM Research Internship", "Engineer Trainee"]
+    - company: Intel
+      careers_url: https://jobs.intel.com/en/search-jobs/India
+      locations: ["Bengaluru", "Hyderabad"]
+      industry: Semiconductor & AI Compute
+      programs: ["Graduate Intern Technical", "Software Engineer"]
+    - company: Nutanix
+      careers_url: https://nutanix.wd1.myworkdayjobs.com/NutanixJobs?locationCountry=bc33aa3152ec42d4995f4791a106ed09
+      locations: ["Bengaluru", "Pune"]
+      industry: Hybrid Multicloud & HCI
+      programs: ["Systems Engineering", "Cloud Distributed Storage"]
+    - company: Cisco
+      careers_url: https://jobs.cisco.com/jobs/SearchJobs/?21178=%5B169482%5D
+      locations: ["Bengaluru"]
+      industry: Networking & Cybersecurity
+      programs: ["Cisco Ideathon", "Technical Consulting Engineer", "Software Engineer"]
+
+  # ==============================================================================
+  # 🇮🇳 Indian High-Growth Consumer & Tech Unicorns
+  # ==============================================================================
+  indian_unicorns:
+    - company: Flipkart
+      careers_url: https://www.flipkartcareers.com/
+      locations: ["Bengaluru"]
+      industry: E-Commerce & Supply Chain
+      programs: ["Flipkart GRiD Hackathon", "Software Development Engineer 1", "Data Scientist"]
+    - company: Swiggy
+      careers_url: https://careers.swiggy.com/
+      locations: ["Bengaluru", "Remote India"]
+      industry: Food Delivery & Quick Commerce (Instamart)
+      programs: ["SDE-1", "Data Platform Engineering", "Future of Work Remote"]
+    - company: Zomato / Blinkit
+      careers_url: https://www.zomato.com/careers
+      locations: ["Gurugram", "Bengaluru"]
+      industry: Food Delivery & 10-Minute Quick Commerce
+      programs: ["Software Engineering", "Data Analytics & Pricing", "Operations Tech"]
+    - company: PhonePe
+      careers_url: https://www.phonepe.com/careers/job-openings/
+      locations: ["Bengaluru", "Pune"]
+      industry: Digital Payments, UPI & Insurance
+      programs: ["PhonePe Tech Scholar", "Software Engineer 1", "Data Engineering"]
+    - company: Razorpay
+      careers_url: https://razorpay.com/jobs/
+      locations: ["Bengaluru"]
+      industry: Payment Gateway & Neobanking
+      programs: ["SDE-1", "FinTech Data Systems", "Campus Drives"]
+    - company: Zepto
+      careers_url: https://www.zeptonow.com/careers
+      locations: ["Bengaluru", "Mumbai"]
+      industry: Quick Commerce & Hyperlocal Delivery
+      programs: ["Software Engineer", "Supply Chain Analytics"]
+    - company: Zerodha
+      careers_url: https://zerodha.com/careers
+      locations: ["Bengaluru"]
+      industry: Discount Broking & FinTech (Kite, Coin)
+      programs: ["FOSS-focused Engineering", "Golang/Python Systems"]
+    - company: Dream11 (Dream Sports)
+      careers_url: https://careers.dreamsports.group/
+      locations: ["Mumbai", "Bengaluru"]
+      industry: SportsTech & Real-Time Gaming
+      programs: ["High-Scale Microservices", "Data Science & Match Prediction"]
+    - company: Games24x7
+      careers_url: https://www.games24x7.com/careers/
+      locations: ["Bengaluru", "Mumbai"]
+      industry: Gaming & Interactive Entertainment
+      programs: ["Game Analytics", "Data Platform Engineer"]
+    - company: MPL (Mobile Premier League)
+      careers_url: https://www.mpl.live/careers
+      locations: ["Bengaluru"]
+      industry: Esports & Mobile Gaming
+      programs: ["Real-Time Distributed Systems", "Backend Engineer"]
+    - company: BrowserStack
+      careers_url: https://www.browserstack.com/careers
+      locations: ["Mumbai", "Bengaluru", "Remote India"]
+      industry: Cloud Web & Mobile Testing
+      programs: ["Software Engineer", "Infrastructure Systems"]
+    - company: Freshworks
+      careers_url: https://www.freshworks.com/company/careers/
+      locations: ["Chennai", "Bengaluru"]
+      industry: SaaS Customer Engagement & CRM
+      programs: ["Freshworks Academy", "Associate Software Engineer"]
+    - company: Sprinklr
+      careers_url: https://www.sprinklr.com/careers/
+      locations: ["Gurugram", "Bengaluru"]
+      industry: Enterprise Social & Unified CXM
+      programs: ["Product Engineer", "AI/NLP Engineering"]
+    - company: Zoho
+      careers_url: https://www.zoho.com/careers/
+      locations: ["Chennai", "Tenkasi", "Salem", "Coimbatore"]
+      industry: Business Cloud & SaaS
+      programs: ["Zoho Schools of Learning", "Software Developer Trainee"]
+    - company: Disney+ Hotstar
+      careers_url: https://careers.hotstar.com/
+      locations: ["Bengaluru", "Mumbai"]
+      industry: Streaming Video & CDN Systems
+      programs: ["Distributed Video Delivery", "Data Platform Engineer"]
+    - company: Delhivery
+      careers_url: https://www.delhivery.com/careers/
+      locations: ["Gurugram", "Bengaluru"]
+      industry: Integrated Logistics & Supply Chain
+      programs: ["Operations Analytics", "Logistics Algorithms"]
+    - company: MakeMyTrip
+      careers_url: https://careers.makemytrip.com/
+      locations: ["Gurugram", "Bengaluru"]
+      industry: Online Travel Agency (OTA)
+      programs: ["Software Engineer 1", "Search & Recommendations"]
+    - company: Pine Labs
+      careers_url: https://www.pinelabs.com/careers
+      locations: ["Noida", "Bengaluru", "Mumbai"]
+      industry: Merchant Commerce & PoS Tech
+      programs: ["Embedded & Cloud Payments", "Data Systems"]
+    - company: Unacademy
+      careers_url: https://unacademy.com/careers/
+      locations: ["Bengaluru"]
+      industry: EdTech & Online Learning
+      programs: ["Live Streaming Tech", "Full Stack Engineer"]
+    - company: PhysicsWallah
+      careers_url: https://www.pw.live/careers
+      locations: ["Noida", "Bengaluru"]
+      industry: EdTech & Affordable Learning
+      programs: ["Platform Engineering", "Student Analytics"]
+
+  # ==============================================================================
+  # 📈 Top Quant, HFT & Investment Banking (High Comp)
+  # ==============================================================================
+  quant_and_finance:
+    - company: D.E. Shaw India
+      careers_url: https://www.deshawindia.com/careers
+      locations: ["Hyderabad", "Bengaluru"]
+      industry: Quantitative Hedge Fund & Asset Management
+      programs: ["Member of Technical Staff (MTS)", "DESIS Fellowship", "Internships"]
+    - company: Optiver India
+      careers_url: https://optiver.com/working-at-optiver/career-opportunities/?location=india
+      locations: ["Mumbai"]
+      industry: Global Market Maker & Algorithmic Trading
+      programs: ["Quantitative Researcher", "Software Engineer (C++)", "Trader Trainee"]
+    - company: AlphaGrep
+      careers_url: https://alpha-grep.com/careers/
+      locations: ["Mumbai", "Bengaluru", "Gurugram"]
+      industry: Quantitative Trading & HFT
+      programs: ["Low Latency Systems C++", "Quant Researcher"]
+    - company: Goldman Sachs
+      careers_url: https://www.goldmansachs.com/careers/students/programs/india/
+      locations: ["Bengaluru", "Hyderabad"]
+      industry: Investment Banking & Global Markets
+      programs: ["Engineering Campus Hiring Program", "Summer Analyst Internship"]
+    - company: JPMorgan Chase & Co.
+      careers_url: https://careers.jpmorgan.com/global/en/students/programs
+      locations: ["Bengaluru", "Hyderabad", "Mumbai"]
+      industry: Global Investment Banking
+      programs: ["Software Engineer Program (SEP)", "Code for Good Hackathon"]
+    - company: Morgan Stanley
+      careers_url: https://www.morganstanley.com/people-opportunities/students-graduates/programs/asia-pacific
+      locations: ["Bengaluru", "Mumbai"]
+      industry: Institutional Securities & Wealth
+      programs: ["Technology Analyst Program (TAP)", "Data Analyst"]
+    - company: Wells Fargo
+      careers_url: https://www.wellsfargojobs.com/en/international/
+      locations: ["Bengaluru", "Hyderabad", "Chennai"]
+      industry: Financial Services & Commercial Banking
+      programs: ["University Graduate Hiring", "Software Engineer"]
+    - company: Barclays
+      careers_url: https://search.jobs.barclays/graduates-interns
+      locations: ["Pune", "Noida"]
+      industry: Transatlantic Consumer & Investment Bank
+      programs: ["Technology Developer Graduate", "Quant Analytics Graduate"]
+    - company: BlackRock
+      careers_url: https://careers.blackrock.com/early-careers/
+      locations: ["Gurugram", "Bengaluru", "Mumbai"]
+      industry: Asset Management (Aladdin Platform)
+      programs: ["Aladdin Engineering Graduate", "Summer Analyst"]
+    - company: American Express
+      careers_url: https://www.americanexpress.com/en-in/careers/student-programs/
+      locations: ["Gurugram", "Bengaluru"]
+      industry: Payments & Card Network
+      programs: ["Campus Engineer Trainee", "Data & Risk Analytics"]
+
+  # ==============================================================================
+  # 📊 Data Analytics, AI & Specialized Consulting
+  # ==============================================================================
+  analytics_and_consulting:
+    - company: Fractal Analytics
+      careers_url: https://fractal.ai/careers/
+      locations: ["Bengaluru", "Mumbai", "Gurugram"]
+      industry: Enterprise AI & Big Data Analytics
+      programs: ["Imagineer Trainee", "Data Engineer", "AI/ML Engineer"]
+    - company: Tiger Analytics
+      careers_url: https://www.tigeranalytics.com/careers/
+      locations: ["Chennai", "Bengaluru", "Hyderabad"]
+      industry: Advanced Analytics & AI Consulting
+      programs: ["Analyst Trainee", "Data Engineering Track"]
+    - company: Tredence
+      careers_url: https://www.tredence.com/careers
+      locations: ["Bengaluru", "Gurugram", "Chennai"]
+      industry: Data Science & Last-Mile AI
+      programs: ["Associate Data Engineer", "Data Scientist"]
+    - company: Quantiphi
+      careers_url: https://quantiphi.com/careers/
+      locations: ["Bengaluru", "Mumbai", "Thane"]
+      industry: Applied AI & Cloud Data Engineering
+      programs: ["Framework Engineer", "Google Cloud / AWS Partner Track"]
+    - company: Mu Sigma
+      careers_url: https://www.mu-sigma.com/careers
+      locations: ["Bengaluru"]
+      industry: Decision Sciences & Analytics
+      programs: ["Trainee Decision Scientist (TDS)"]
+    - company: LatentView Analytics
+      careers_url: https://www.latentview.com/careers/
+      locations: ["Chennai", "Bengaluru"]
+      industry: Digital Analytics & Business Intelligence
+      programs: ["Analytics Consultant Trainee", "Data Engineer"]
+    - company: ZS Associates
+      careers_url: https://www.zs.com/careers
+      locations: ["Pune", "Gurugram", "Bengaluru"]
+      industry: Healthcare Analytics & Management Consulting
+      programs: ["Decision Analytics Associate (DAA)", "Business Technology Associate (BTA)"]
+    - company: Axtria
+      careers_url: https://www.axtria.com/careers/
+      locations: ["Noida", "Gurugram", "Bengaluru", "Pune"]
+      industry: Life Sciences Cloud & Analytics
+      programs: ["Analyst Trainee", "Data Management Associate"]
+    - company: EXL Service
+      careers_url: https://www.exlservice.com/careers
+      locations: ["Noida", "Bengaluru", "Gurugram", "Pune"]
+      industry: Operations Management & Analytics
+      programs: ["Analytics Associate", "Data Engineer"]
+    - company: Deloitte
+      careers_url: https://jobsindia.deloitte.com/
+      locations: ["Hyderabad", "Bengaluru", "Gurugram", "Mumbai"]
+      industry: Strategy, Risk & Technology Consulting
+      programs: ["Deloitte USI Graduate Hiring", "Technology Analyst", "Data & AI Associate"]
+    - company: PwC India
+      careers_url: https://www.pwc.in/careers.html
+      locations: ["Kolkata", "Bengaluru", "Mumbai", "Gurugram"]
+      industry: Assurance & Technology Advisory
+      programs: ["Associate - Technology Consulting", "Data & Analytics Associate"]
+    - company: EY (Ernst & Young)
+      careers_url: https://www.ey.com/en_in/careers
+      locations: ["Bengaluru", "Kochi", "Gurugram", "Hyderabad"]
+      industry: Advisory & Digital Transformation
+      programs: ["EY GDS Early Careers", "Software & Cloud Engineer"]
+    - company: KPMG India
+      careers_url: https://kpmg.com/in/en/home/careers.html
+      locations: ["Bengaluru", "Mumbai", "Gurugram"]
+      industry: Financial & Technology Advisory
+      programs: ["Analyst - Digital Lighthouse Data Team"]
+
+  # ==============================================================================
+  # 🎓 IT Services & Mass / Off-Campus Graduate Trainee Programs (Freshers)
+  # ==============================================================================
+  fresher_trainee_programs:
+    - company: Infosys
+      program_name: Infosys InStep & Specialist Programmer (SP / DSE)
+      careers_url: https://www.infosys.com/careers/
+      locations: ["Pan-India", "Bengaluru", "Mysore", "Pune", "Hyderabad"]
+      industry: Global IT Services
+      hiring_criteria: "InfyTQ / HackWithInfy, B.Tech/M.Tech (CS/IT/Data), 60%+ throughout"
+    - company: Wipro
+      program_name: Wipro Elite National Talent Hunt (NTH) & Turbo
+      careers_url: https://careers.wipro.com/elite
+      locations: ["Pan-India", "Bengaluru", "Chennai", "Hyderabad"]
+      industry: Global IT Services
+      hiring_criteria: "Elite NTH Exam, B.E./B.Tech, 60% or 6.0 CGPA"
+    - company: Accenture
+      program_name: Associate Software Engineer (ASE) & Advanced ASE
+      careers_url: https://www.accenture.com/in-en/careers/local/entry-level-jobs
+      locations: ["Bengaluru", "Hyderabad", "Pune", "Chennai", "Gurugram", "Kolkata"]
+      industry: Global Technology Consulting
+      hiring_criteria: "Cognitive, Technical Assessment & Coding, BE/BTech/MCA"
+    - company: Cognizant
+      program_name: Cognizant GenC, GenC Elevate & GenC Pro
+      careers_url: https://www.cognizant.com/in/en/careers/campus-hiring
+      locations: ["Chennai", "Bengaluru", "Hyderabad", "Pune", "Kolkata", "Coimbatore"]
+      industry: IT Services & Consulting
+      hiring_criteria: "GenC Skill Assessment, 60%+ in X, XII, and Degree"
+    - company: Capgemini
+      program_name: Capgemini Exceller Off-Campus Drive
+      careers_url: https://www.capgemini.com/in-en/careers/campus-connect/
+      locations: ["Bengaluru", "Pune", "Mumbai", "Hyderabad", "Chennai"]
+      industry: IT & Engineering Services
+      hiring_criteria: "Pseudocode, English, Behavioral, and Coding tests"
+    - company: HCLTech
+      program_name: HCL Graduate Engineer Trainee (GET)
+      careers_url: https://www.hcltech.com/careers/freshers
+      locations: ["Noida", "Chennai", "Bengaluru", "Lucknow", "Nagpur"]
+      industry: Technology & Next-Gen Services
+      hiring_criteria: "Online Aptitude & Technical Interview, BE/BTech/ME/MTech"
+    - company: Tech Mahindra
+      program_name: Associate Software Engineer (ASE) Trainee
+      careers_url: https://careers.techmahindra.com/
+      locations: ["Pune", "Bengaluru", "Hyderabad", "Noida", "Chennai"]
+      industry: Telecom & Enterprise IT
+      hiring_criteria: "Aptitude + Psychometric + Tech Test, 60% throughout"
+    - company: LTIMindtree
+      program_name: Graduate Engineer Trainee (GET) & Sparks
+      careers_url: https://www.ltimindtree.com/careers/
+      locations: ["Mumbai", "Bengaluru", "Pune", "Chennai"]
+      industry: Digital Solutions & Technology
+      hiring_criteria: "National Qualifying Assessment, 60%+ throughout"
+    - company: EPAM Systems
+      program_name: EPAM Junior Software Engineer Trainee
+      careers_url: https://www.epam.com/careers/country/india
+      locations: ["Hyderabad", "Bengaluru", "Pune", "Gurugram"]
+      industry: Digital Platform Engineering
+      hiring_criteria: "Coding challenge (Java/Python/Data Structures) & Tech Interview"
+    - company: Nagarro
+      program_name: Nagarro Early Engineering Program
+      careers_url: https://www.nagarro.com/en/careers
+      locations: ["Gurugram", "Jaipur", "Bengaluru", "Pune"]
+      industry: Digital Product Engineering
+      hiring_criteria: "Algorithms, Data Structures & System Design"
+    - company: Persistent Systems
+      program_name: Persistent Graduate Engineer
+      careers_url: https://www.persistent.com/careers/
+      locations: ["Pune", "Bengaluru", "Hyderabad", "Nagpur"]
+      industry: Digital Engineering & Enterprise Modernization
+      hiring_criteria: "Coding & Aptitude Test"
+    - company: GlobalLogic (Hitachi)
+      program_name: Associate Software Engineer
+      careers_url: https://www.globallogic.com/in/careers/
+      locations: ["Noida", "Gurugram", "Bengaluru", "Hyderabad"]
+      industry: Digital Product Engineering
+      hiring_criteria: "Coding Test & Technical Evaluation"
+
+  # ==============================================================================
+  # 🏆 Fellowships, Open Source, Research & Hackathons (Premier Entry Gateways)
+  # ==============================================================================
+  fellowships_and_hackathons:
+    - name: GSOC (Google Summer of Code)
+      url: https://summerofcode.withgoogle.com/
+      type: Global Open Source Fellowship
+      stipend: "$1,500 - $3,000"
+      description: "Mentored contributions to open source software (Apache, Linux, CNCF, Python, etc.)."
+    - name: MLH Fellowship (Major League Hacking)
+      url: https://fellowship.mlh.io/
+      type: Software Engineering Fellowship
+      stipend: "Funded Need-based Educational Grant"
+      description: "12-week remote internship alternative collaborating on open-source with industry mentors."
+    - name: SIH (Smart India Hackathon)
+      url: https://www.sih.gov.in/
+      type: National Innovation Hackathon
+      stipend: "Rs. 1,00,000 per problem statement + Govt project funding"
+      description: "World's biggest open innovation hackathon organized by AICTE and MoE Innovation Cell."
+    - name: Microsoft Imagine Cup
+      url: https://imaginecup.microsoft.com/
+      type: Global Student Tech Competition
+      stipend: "$100,000 Global Prize + Mentorship with Microsoft CEO Satya Nadella"
+      description: "Build innovative AI and cloud solutions on Microsoft Azure."
+    - name: Google Solution Challenge
+      url: https://developers.google.com/community/gdsc-solution-challenge
+      type: Global Developer Student Challenge
+      stipend: "$12,000 prize pool + Google developer mentorship"
+      description: "Solve 1 of the 17 UN Sustainable Development Goals using Google Cloud and AI."
+    - name: Adobe University Hackathon
+      url: https://www.adobe.com/careers/university.html
+      type: Student Innovation Hackathon
+      stipend: "PPO / FTE Interview Opportunities + Cash Prizes"
+      description: "Problem-solving hackathons offering direct interview shortlists at Adobe."
+    - name: TCS Research & Innovation
+      url: https://www.tcs.com/what-we-do/research
+      type: Industrial Research Fellowship
+      stipend: "Competitive Fellowship + PhD Sponsorship"
+      description: "Deep-tech research across Computing Systems, AI, Cybersecurity, and Physical Sciences."
+    - name: DRDO (Defence Research and Development Organisation)
+      url: https://www.drdo.gov.in/careers
+      type: Government Research & Junior Research Fellow (JRF)
+      stipend: "Central Govt JRF Scale (Rs. 37,000/mo + HRA)"
+      description: "National defense and aerospace computer science research opportunities."

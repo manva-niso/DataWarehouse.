@@ -98,6 +98,23 @@ companies:
     hiring_pace: Moderate
     notes: Leading API collaboration and testing platform with roots in Bengaluru.
 
+  - display_name: Zeta
+    lever_company_slug: zeta
+    industry: Banking Tech & Neo-Banking
+    locations:
+      - Bengaluru
+      - Mumbai
+    hiring_pace: Aggressive
+    notes: Modern cloud-native banking platform and payment processing suite.
+
+  - display_name: Clear (ClearTax)
+    greenhouse_board_token: clear
+    industry: FinTech & Compliance SaaS
+    locations:
+      - Bengaluru
+    hiring_pace: Aggressive
+    notes: Financial compliance, e-invoicing, and enterprise taxation infrastructure.
+
   # ==============================================================================
   # 📊 Modern Data Stack & Cloud Infrastructure (High Data Engineering Demand)
   # ==============================================================================
@@ -191,6 +208,24 @@ companies:
       - Remote India
     hiring_pace: Moderate
     notes: Essential monitoring and observability platform for cloud-scale applications.
+
+  - display_name: Rubrik
+    greenhouse_board_token: rubrik
+    industry: Zero-Trust Data Security & Recovery
+    locations:
+      - Bengaluru
+    hiring_pace: Aggressive
+    notes: Enterprise data security and ransomware recovery with massive Bengaluru engineering center.
+
+  - display_name: Zscaler
+    greenhouse_board_token: zscaler
+    industry: Cloud Security & Zero-Trust (SASE)
+    locations:
+      - Bengaluru
+      - Pune
+      - Chandigarh
+    hiring_pace: Aggressive
+    notes: Global cloud security pioneer with extensive R&D facilities across India.
 
   # ==============================================================================
   # 🌐 Global Cloud, Enterprise & SaaS Leaders with India Hubs
@@ -321,6 +356,14 @@ companies:
     hiring_pace: Aggressive
     notes: Global payments and financial infrastructure across APAC, India, and EMEA.
 
+  - display_name: Sarvam AI
+    ashby_board_slug: sarvam
+    industry: Sovereign Generative AI & Foundational Models
+    locations:
+      - Bengaluru
+    hiring_pace: Highly Aggressive
+    notes: India's premier generative AI startup building indigenous foundational models and speech systems.
+
   - display_name: Sentry
     ashby_board_slug: sentry
     industry: Application Performance & Error Monitoring
@@ -328,6 +371,35 @@ companies:
       - Remote
     hiring_pace: Moderate
     notes: Developer-first error and performance monitoring for full-stack applications.
+
+  # ==============================================================================
+  # 📈 Quantitative Trading, Asset Management & HFT
+  # ==============================================================================
+  - display_name: Tower Research Capital
+    greenhouse_board_token: towerresearchcapital
+    industry: High-Frequency Trading & Quant Finance
+    locations:
+      - Gurugram
+      - Bengaluru
+    hiring_pace: Aggressive
+    notes: World-class quantitative trading and low-latency algorithmic execution firm.
+
+  - display_name: Qube Research & Technologies
+    greenhouse_board_token: quberesearchandtechnologies
+    industry: Quantitative Asset Management & Alpha Research
+    locations:
+      - Bengaluru
+      - Mumbai
+    hiring_pace: Aggressive
+    notes: Global quantitative investment manager powered by technology, data, and scientific research.
+
+  - display_name: Graviton Research Capital
+    greenhouse_board_token: gravitonresearchcapital
+    industry: Quantitative Trading & HFT
+    locations:
+      - Gurugram
+    hiring_pace: Aggressive
+    notes: Premier Indian proprietary quantitative trading firm operating in global financial markets.
 
   # ==============================================================================
   # 🏢 Rippling Virtual Workplaces

@@ -268,195 +268,303 @@ total_pages = max(1, (total_count + PAGE_SIZE - 1) // PAGE_SIZE)
 page_num = st.sidebar.number_input("Page", min_value=1, max_value=total_pages, value=1)
 offset = (page_num - 1) * PAGE_SIZE
 
-fetch_sql = f"""
-SELECT
-  t.posting_id,
-  t.company_name,
-  t.job_title,
-  t.role_family,
-  t.location,
-  t.date_posted,
-  t.closing_date,
-  t.is_likely_closed,
-  t.status AS application_status,
-  d.salary_min,
-  d.salary_max,
-  d.currency,
-  d.employment_type,
-  d.posting_url,
-  d.apply_url,
-  d.description,
-  d.min_years_exp,
-  d.max_years_exp,
-  d.is_fresher,
-  d.experience_level
-FROM {base_table} t
-LEFT JOIN job_posting_detail d ON d.posting_id = t.posting_id
-{where_str}
-ORDER BY t.date_posted DESC, t.posting_id DESC
-LIMIT {PAGE_SIZE} OFFSET {offset}
-"""
 
-if status_option == "Offline Encoded Archive":
-    if ENCODED_ARCHIVE_PATH.exists():
-        with open(ENCODED_ARCHIVE_PATH, "rb") as gz_file:
-            st.download_button(
-                "📥 Download Encoded Cold-Storage Archive (.jsonl.gz)",
-                data=gz_file.read(),
-                file_name="archived_postings_encoded.jsonl.gz",
-                mime="application/gzip",
+tab_live, tab_portals = st.tabs(["🔍 Live Opportunities (Delta Lake)", "🏛️ Enterprise, Big Tech & Fresher Hub"])
+
+with tab_live:
+    fetch_sql = f"""
+    SELECT
+      t.posting_id,
+      t.company_name,
+      t.job_title,
+      t.role_family,
+      t.location,
+      t.date_posted,
+      t.closing_date,
+      t.is_likely_closed,
+      t.status AS application_status,
+      d.salary_min,
+      d.salary_max,
+      d.currency,
+      d.employment_type,
+      d.posting_url,
+      d.apply_url,
+      d.description,
+      d.min_years_exp,
+      d.max_years_exp,
+      d.is_fresher,
+      d.experience_level
+    FROM {base_table} t
+    LEFT JOIN job_posting_detail d ON d.posting_id = t.posting_id
+    {where_str}
+    ORDER BY t.date_posted DESC, t.posting_id DESC
+    LIMIT {PAGE_SIZE} OFFSET {offset}
+    """
+
+    if status_option == "Offline Encoded Archive":
+        if ENCODED_ARCHIVE_PATH.exists():
+            with open(ENCODED_ARCHIVE_PATH, "rb") as gz_file:
+                st.download_button(
+                    "📥 Download Encoded Cold-Storage Archive (.jsonl.gz)",
+                    data=gz_file.read(),
+                    file_name="archived_postings_encoded.jsonl.gz",
+                    mime="application/gzip",
+                )
+        all_archived = load_encoded_archived_postings(limit=300)
+        rows = all_archived[offset : offset + PAGE_SIZE]
+    else:
+        try:
+            rows = query_rows(fetch_sql, params)
+        except Exception as exc:
+            st.error(f"Could not execute live query: {exc}")
+            rows = []
+
+    if not rows:
+        st.info("No postings found matching your current filter criteria.")
+        if status_option == "Active Postings (Live Database)":
+            st.caption(
+                "💡 Postings in warehouse may be older than the active threshold. "
+                "Click **🔄 Ingest Fresh Jobs** above to fetch live openings, or change Posting Status to **Offline Encoded Archive**."
             )
-    all_archived = load_encoded_archived_postings(limit=300)
-    rows = all_archived[offset : offset + PAGE_SIZE]
-else:
-    try:
-        rows = query_rows(fetch_sql, params)
-    except Exception as exc:
-        st.error(f"Could not execute live query: {exc}")
-        rows = []
+    else:
+        # Top bar for results count & export
+        col_exp, col_stat = st.columns([1, 3])
+        with col_exp:
+            df_export = pd.DataFrame(rows)
+            csv_data = df_export.to_csv(index=False).encode("utf-8")
+            st.download_button(
+                label="📥 Export Page (CSV)",
+                data=csv_data,
+                file_name=f"job_postings_page_{page_num}.csv",
+                mime="text/csv",
+            )
+        with col_stat:
+            st.write(f"Showing page **{page_num}** of **{total_pages}** ({total_count:,} total postings)")
 
-if not rows:
-    st.info("No postings found matching your current filter criteria.")
-    if status_option == "Active Postings (Live Database)":
-        st.caption(
-            "💡 Postings in warehouse may be older than the active threshold. "
-            "Click **🔄 Ingest Fresh Jobs** above to fetch live openings, or change Posting Status to **Offline Encoded Archive**."
-        )
-else:
-    # Top bar for results count & export
-    col_exp, col_stat = st.columns([1, 3])
-    with col_exp:
-        df_export = pd.DataFrame(rows)
-        csv_data = df_export.to_csv(index=False).encode("utf-8")
-        st.download_button(
-            label="📥 Export Page (CSV)",
-            data=csv_data,
-            file_name=f"job_postings_page_{page_num}.csv",
-            mime="text/csv",
-        )
-    with col_stat:
-        st.write(f"Showing page **{page_num}** of **{total_pages}** ({total_count:,} total postings)")
+        # Job Cards
+        for row in rows:
+            pid = row["posting_id"]
+            family = row.get("role_family") or "OTHER"
+            apply_url = row.get("apply_url")
+            posting_url = row.get("posting_url")
 
-    # Job Cards
-    for row in rows:
-        pid = row["posting_id"]
-        family = row.get("role_family") or "OTHER"
-        apply_url = row.get("apply_url")
-        posting_url = row.get("posting_url")
+            exp_lvl = row.get("experience_level") or "UNSPECIFIED"
+            is_fresh = bool(row.get("is_fresher"))
+            min_exp = row.get("min_years_exp")
+            max_exp = row.get("max_years_exp")
 
-        exp_lvl = row.get("experience_level") or "UNSPECIFIED"
-        is_fresh = bool(row.get("is_fresher"))
-        min_exp = row.get("min_years_exp")
-        max_exp = row.get("max_years_exp")
+            with st.container():
+                c1, c2 = st.columns([3.5, 1.5])
+                with c1:
+                    st.markdown(f"### {row['job_title']} — **{row['company_name']}**")
+                    meta_parts = [
+                        f"🏷️ `{family}`",
+                        f"📍 {row.get('location') or 'Location unspecified'}",
+                        f"📅 Posted: {row.get('date_posted') or 'Recent'}",
+                    ]
+                    if is_fresh or exp_lvl == "FRESHER":
+                        meta_parts.append("🎓 **Fresher / New Grad**")
+                    elif exp_lvl == "JUNIOR":
+                        meta_parts.append("💼 **Junior (1-3 yrs)**")
+                    elif exp_lvl == "MID":
+                        meta_parts.append(f"💼 **Mid-Level ({min_exp or 3}-{max_exp or 5} yrs)**")
+                    elif exp_lvl == "SENIOR":
+                        meta_parts.append(f"💼 **Senior ({min_exp or 5}+ yrs)**")
+                    elif exp_lvl == "LEAD":
+                        meta_parts.append(f"💼 **Lead / Staff ({min_exp or 8}+ yrs)**")
 
-        with st.container():
-            c1, c2 = st.columns([3.5, 1.5])
-            with c1:
-                st.markdown(f"### {row['job_title']} — **{row['company_name']}**")
-                meta_parts = [
-                    f"🏷️ `{family}`",
-                    f"📍 {row.get('location') or 'Location unspecified'}",
-                    f"📅 Posted: {row.get('date_posted') or 'Recent'}",
-                ]
-                if is_fresh or exp_lvl == "FRESHER":
-                    meta_parts.append("🎓 **Fresher / New Grad**")
-                elif exp_lvl == "JUNIOR":
-                    meta_parts.append("💼 **Junior (1-3 yrs)**")
-                elif exp_lvl == "MID":
-                    meta_parts.append(f"💼 **Mid-Level ({min_exp or 3}-{max_exp or 5} yrs)**")
-                elif exp_lvl == "SENIOR":
-                    meta_parts.append(f"💼 **Senior ({min_exp or 5}+ yrs)**")
-                elif exp_lvl == "LEAD":
-                    meta_parts.append(f"💼 **Lead / Staff ({min_exp or 8}+ yrs)**")
-
-                if row.get("salary_max"):
-                    sal_curr = row.get("currency") or ""
-                    meta_parts.append(f"💰 {sal_curr} {row.get('salary_min', 0):,.0f} - {row['salary_max']:,.0f}")
-                if row.get("employment_type"):
-                    meta_parts.append(f"⏱️ {row['employment_type']}")
-                if status_option == "Offline Encoded Archive" or row.get("is_likely_closed"):
-                    meta_parts.append("🗄️ *Cold Storage Archive*")
-                else:
-                    meta_parts.append("🟢 *Live Active*")
-                st.markdown(" | ".join(meta_parts))
-
-            with c2:
-                # Direct Links
-                if apply_url:
-                    st.link_button("🚀 Apply on Career Page", apply_url, type="primary")
-                elif posting_url:
-                    st.link_button("🚀 Apply on Career Page", posting_url, type="primary")
-                else:
-                    search_q = urllib.parse.quote(f"{row['company_name']} {row['job_title']} jobs")
-                    st.link_button("🔍 Search Job Online", f"https://www.google.com/search?q={search_q}")
-
-                if posting_url and posting_url != apply_url:
-                    st.link_button("🔗 View Original Posting", posting_url)
-
-                b_col1, b_col2 = st.columns(2)
-                with b_col1:
-                    if st.button("⭐ Bookmark", key=f"save_{pid}"):
-                        try:
-                            save_job(pid)
-                            st.toast("Saved to your bookmarks!", icon="⭐")
-                            st.rerun()
-                        except Exception as e:
-                            st.error(str(e))
-                with b_col2:
-                    if st.button("🚫 Dismiss", key=f"hide_{pid}"):
-                        try:
-                            hide_job(pid)
-                            st.toast("Dismissed from view", icon="🚫")
-                            st.rerun()
-                        except Exception as e:
-                            st.error(str(e))
-
-            # Details & Notes Expander
-            with st.expander("📖 Read Job Details, Experience & Notes"):
-                st.markdown("#### 🎓 Experience Requirements")
-                e_c1, e_c2, e_c3 = st.columns(3)
-                with e_c1:
-                    st.metric("Seniority Classification", exp_lvl)
-                with e_c2:
-                    if min_exp is not None:
-                        val = f"{min_exp} yrs" + (f" - {max_exp} yrs" if max_exp else "+")
+                    if row.get("salary_max"):
+                        sal_curr = row.get("currency") or ""
+                        meta_parts.append(f"💰 {sal_curr} {row.get('salary_min', 0):,.0f} - {row['salary_max']:,.0f}")
+                    if row.get("employment_type"):
+                        meta_parts.append(f"⏱️ {row['employment_type']}")
+                    if status_option == "Offline Encoded Archive" or row.get("is_likely_closed"):
+                        meta_parts.append("🗄️ *Cold Storage Archive*")
                     else:
-                        val = "Not specified"
-                    st.metric("Required Experience", val)
-                with e_c3:
-                    st.metric("Fresher Eligible", "Yes 🎓" if is_fresh else "No")
+                        meta_parts.append("🟢 *Live Active*")
+                    st.markdown(" | ".join(meta_parts))
 
-                desc = row.get("description")
-                if desc and desc.strip():
-                    st.markdown("---")
-                    st.markdown("#### Full Job Description")
-                    st.write(desc)
-                else:
-                    st.info("No detailed description available in ATS feed. Click the link above to view details on the company's portal.")
+                with c2:
+                    # Direct Links
+                    if apply_url:
+                        st.link_button("🚀 Apply on Career Page", apply_url, type="primary")
+                    elif posting_url:
+                        st.link_button("🚀 Apply on Career Page", posting_url, type="primary")
+                    else:
+                        search_q = urllib.parse.quote(f"{row['company_name']} {row['job_title']} jobs")
+                        st.link_button("🔍 Search Job Online", f"https://www.google.com/search?q={search_q}")
 
-                st.markdown("---")
-                st.markdown("#### 📝 Private Notes & Research")
-                notes = get_notes(pid)
-                if notes:
-                    for n in notes:
-                        n_c1, n_c2 = st.columns([5, 1])
-                        with n_c1:
-                            st.caption(f"Added on {n['created_at']}")
-                            st.write(n["note"])
-                        with n_c2:
-                            if st.button("🗑️ Delete", key=f"del_note_{n['note_id']}"):
-                                delete_note(n["note_id"])
+                    if posting_url and posting_url != apply_url:
+                        st.link_button("🔗 View Original Posting", posting_url)
+
+                    b_col1, b_col2 = st.columns(2)
+                    with b_col1:
+                        if st.button("⭐ Bookmark", key=f"save_{pid}"):
+                            try:
+                                save_job(pid)
+                                st.toast("Saved to your bookmarks!", icon="⭐")
                                 st.rerun()
-                else:
-                    st.caption("No notes recorded yet.")
+                            except Exception as e:
+                                st.error(str(e))
+                    with b_col2:
+                        if st.button("🚫 Dismiss", key=f"hide_{pid}"):
+                            try:
+                                hide_job(pid)
+                                st.toast("Dismissed from view", icon="🚫")
+                                st.rerun()
+                            except Exception as e:
+                                st.error(str(e))
 
-                note_text = st.text_input("Add research note (e.g. required skills, interview prep)", key=f"note_in_{pid}")
-                if st.button("Save Note", key=f"save_note_{pid}"):
-                    if note_text:
-                        try:
-                            add_note(pid, note_text)
-                            st.success("Note saved!")
-                            st.rerun()
-                        except Exception as e:
-                            st.error(str(e))
-            st.divider()
+                # Details & Notes Expander
+                with st.expander("📖 Read Job Details, Experience & Notes"):
+                    st.markdown("#### 🎓 Experience Requirements")
+                    e_c1, e_c2, e_c3 = st.columns(3)
+                    with e_c1:
+                        st.metric("Seniority Classification", exp_lvl)
+                    with e_c2:
+                        if min_exp is not None:
+                            val = f"{min_exp} yrs" + (f" - {max_exp} yrs" if max_exp else "+")
+                        else:
+                            val = "Not specified"
+                        st.metric("Required Experience", val)
+                    with e_c3:
+                        st.metric("Fresher Eligible", "Yes 🎓" if is_fresh else "No")
+
+                    desc = row.get("description")
+                    if desc and desc.strip():
+                        st.markdown("---")
+                        st.markdown("#### Full Job Description")
+                        st.write(desc)
+                    else:
+                        st.info("No detailed description available in ATS feed. Click the link above to view details on the company's portal.")
+
+                    st.markdown("---")
+                    st.markdown("#### 📝 Private Notes & Research")
+                    notes = get_notes(pid)
+                    if notes:
+                        for n in notes:
+                            n_c1, n_c2 = st.columns([5, 1])
+                            with n_c1:
+                                st.caption(f"Added on {n['created_at']}")
+                                st.write(n["note"])
+                            with n_c2:
+                                if st.button("🗑️ Delete", key=f"del_note_{n['note_id']}"):
+                                    delete_note(n["note_id"])
+                                    st.rerun()
+                    else:
+                        st.caption("No notes recorded yet.")
+
+                    note_text = st.text_input("Add research note (e.g. required skills, interview prep)", key=f"note_in_{pid}")
+                    if st.button("Save Note", key=f"save_note_{pid}"):
+                        if note_text:
+                            try:
+                                add_note(pid, note_text)
+                                st.success("Note saved!")
+                                st.rerun()
+                            except Exception as e:
+                                st.error(str(e))
+                st.divider()
+
+with tab_portals:
+    st.subheader("🏛️ Enterprise Careers, Big Tech & Fresher Off-Campus Hub")
+    st.caption("Direct gateways to career portals, fresher trainee drives, and prestigious fellowships across India")
+
+    portal_config_path = Path(__file__).resolve().parents[2] / "config" / "enterprise_portals.yaml"
+    if portal_config_path.is_file():
+        import yaml
+        with open(portal_config_path, encoding="utf-8") as f:
+            portals_data = yaml.safe_load(f) or {}
+        cats = portals_data.get("enterprise_categories", {})
+
+        col_cat, col_srch = st.columns([1.5, 2])
+        with col_cat:
+            cat_choice = st.selectbox(
+                "Filter Hub Category",
+                [
+                    "All Categories",
+                    "🌐 Big Tech & Global Engineering Hubs",
+                    "🇮🇳 Indian High-Growth & Quick Commerce Unicorns",
+                    "📈 Top Quant, HFT & Investment Banking",
+                    "📊 Analytics, Decision Sciences & Consulting",
+                    "🎓 IT Services & Mass / Off-Campus Fresher Drives",
+                    "🏆 Fellowships, Hackathons & Govt Research",
+                ],
+            )
+        with col_srch:
+            portal_search = st.text_input(
+                "Search Company, Program, or Location",
+                placeholder="e.g. Google, Infosys, GenC, Bengaluru, Quant",
+            )
+
+        items = []
+        if cat_choice in ("All Categories", "🌐 Big Tech & Global Engineering Hubs"):
+            for c in cats.get("big_tech", []):
+                items.append({**c, "_cat": "Big Tech"})
+        if cat_choice in ("All Categories", "🇮🇳 Indian High-Growth & Quick Commerce Unicorns"):
+            for c in cats.get("indian_unicorns", []):
+                items.append({**c, "_cat": "Indian Unicorns"})
+        if cat_choice in ("All Categories", "📈 Top Quant, HFT & Investment Banking"):
+            for c in cats.get("quant_and_finance", []):
+                items.append({**c, "_cat": "Quant & Finance"})
+        if cat_choice in ("All Categories", "📊 Analytics, Decision Sciences & Consulting"):
+            for c in cats.get("analytics_and_consulting", []):
+                items.append({**c, "_cat": "Analytics & Consulting"})
+        if cat_choice in ("All Categories", "🎓 IT Services & Mass / Off-Campus Fresher Drives"):
+            for c in cats.get("fresher_trainee_programs", []):
+                items.append({**c, "_cat": "Fresher Trainee Programs"})
+        if cat_choice in ("All Categories", "🏆 Fellowships, Hackathons & Govt Research"):
+            for c in cats.get("fellowships_and_hackathons", []):
+                items.append({**c, "_cat": "Fellowships & Hackathons"})
+
+        if portal_search and portal_search.strip():
+            q = portal_search.strip().lower()
+            items = [
+                it
+                for it in items
+                if q in str(it.get("company", "")).lower()
+                or q in str(it.get("name", "")).lower()
+                or q in str(it.get("program_name", "")).lower()
+                or q in str(it.get("locations", "")).lower()
+                or q in str(it.get("programs", "")).lower()
+                or q in str(it.get("hiring_criteria", "")).lower()
+                or q in str(it.get("industry", "")).lower()
+            ]
+
+        st.caption(f"Showing {len(items)} verified enterprise & campus programs")
+
+        for it in items:
+            with st.container():
+                c1, c2 = st.columns([4, 1.2])
+                with c1:
+                    title = it.get("company") or it.get("name") or "Opportunity"
+                    sub = it.get("program_name") or it.get("industry") or it.get("type") or ""
+                    st.markdown(f"### {title} &nbsp; `{it.get('_cat')}`")
+                    if sub:
+                        st.markdown(f"**Focus / Track**: {sub}")
+                    if it.get("locations"):
+                        loc_str = (
+                            ", ".join(it["locations"])
+                            if isinstance(it["locations"], list)
+                            else str(it["locations"])
+                        )
+                        st.markdown(f"📍 **Locations**: {loc_str}")
+                    if it.get("programs"):
+                        prog_str = (
+                            ", ".join(it["programs"])
+                            if isinstance(it["programs"], list)
+                            else str(it["programs"])
+                        )
+                        st.markdown(f"🎯 **Key Hiring Programs**: {prog_str}")
+                    if it.get("hiring_criteria"):
+                        st.markdown(f"🎓 **Eligibility / Criteria**: {it['hiring_criteria']}")
+                    if it.get("stipend"):
+                        st.markdown(f"💰 **Stipend / Prize**: {it['stipend']}")
+                    if it.get("description"):
+                        st.caption(it["description"])
+                with c2:
+                    st.write("")
+                    st.write("")
+                    url = it.get("careers_url") or it.get("url")
+                    if url:
+                        st.link_button("🚀 Open Portal", url, use_container_width=True)
+                st.divider()
